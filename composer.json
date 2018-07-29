@@ -3,8 +3,8 @@
   "description": "Email package for CMS",
   "type": "lib",
   "require": {
-	"anacreation/cms": "dev",
-	"anacreation/notification-provider": "dev"
+	"anacreation/cms": "dev-master",
+	"anacreation/notification-provider": "dev-master"
   },
   "license": "MIT",
   "authors": [
