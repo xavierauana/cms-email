@@ -74,6 +74,6 @@ class CmsEmail
                     ->where('schedule', '<', Carbon::now())
                     ->get()
                 ->each->launch();
-        })->everyMinute()->withoutOverlapping();
+        })->everyMinute();
     }
 }
