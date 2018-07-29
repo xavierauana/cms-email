@@ -1,0 +1,22 @@
+{
+  "name": "anacreation/cms-email",
+  "description": "Email package for CMS",
+  "type": "lib",
+  "require": {
+	"anacreation/cms": "dev",
+	"anacreation/notification-provider": "dev"
+  },
+  "license": "MIT",
+  "authors": [
+	{
+	  "name": "Xavier Au",
+	  "email": "xavier.au@anacreation.com"
+	}
+  ],
+  "autoload": {
+	"psr-4": {
+	  "Anacreation\\CmsEmail\\": "src/"
+	}
+  },
+  "minimum-stability": "dev"
+}
