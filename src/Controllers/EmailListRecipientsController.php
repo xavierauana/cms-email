@@ -4,6 +4,7 @@ namespace Anacreation\CmsEmail\Controllers;
 
 use Anacreation\Cms\Models\Language;
 use Anacreation\CmsEmail\Models\EmailList;
+use Anacreation\CmsEmail\Models\Recipient;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -157,12 +158,18 @@ class EmailListRecipientsController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function destroy(Language $language) {
-        $this->authorize('delete', $language);
+    public function destroy(EmailList $list, Recipient $recipient) {
+        //        $this->authorize('delete', $language);
 
-        $language->delete();
+        if ($list->recipients()->find($recipient->id)->first()) {
+            $recipient->delete();
 
-        return response()->json(['status' => 'completed']);
+            return response()->json(['status' => 'completed']);
+        }
+
+        return response()->json(['status' => 'cannot find recipient in list'],
+            403);
+
     }
 
     public function import(Request $request, EmailList $list) {

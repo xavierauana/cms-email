@@ -1,7 +1,7 @@
 @extends("cms::layouts.default")
 
 @section("content")
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')Edit Campaign: {{$campaign->title}} @endslot
 		
 		{{Form::model($campaign, ['url'=>route('campaigns.update', $campaign->id), 'method'=>'PUT'])}}

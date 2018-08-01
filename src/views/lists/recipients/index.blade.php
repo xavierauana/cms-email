@@ -2,7 +2,7 @@
 
 @section("content")
 	
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')
 			Recipients for Email List: {{$list->title}}
 			<a href="{{route('lists.recipients.create',$list)}}"
@@ -13,7 +13,7 @@
 		@endslot
 		
 		<div class="table-responsive">
-			<table class="table table-hover">
+			<table class="table table-hover" ref="table">
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -23,16 +23,16 @@
 				</thead>
 				<tbody>
 				@foreach($recipients as $recipient)
-					<tr>
+					<tr data-id="{{$recipient->id}}">
 						<td>{{$recipient->name}}</td>
 						<td>{{$recipient->email}}</td>
 						<td>
 							<div class="btn-group btn-group-sm">
 								<delete-item
-										url="{{route('lists.recipients.destroy', [$list->id, $recipient->id])}}"
+										url="{{route('lists.recipients.index', $list->id)}}/"
 										inline-template>
 								<button class="btn btn-danger"
-								        @click.prevent="deleteItem">Delete</button>
+								        @click.prevent="deleteItem({{$recipient->id}})">Delete</button>
 									</delete-item>
 							</div>
 						</td>

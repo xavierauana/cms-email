@@ -2,7 +2,7 @@
 
 @section("content")
 	
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')
 			Recipients for Campaign: {{$campaign->title}}
 			<a href="{{route('campaigns.recipients.create',$campaign)}}"

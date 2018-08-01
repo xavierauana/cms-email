@@ -2,7 +2,7 @@
 
 @section("content")
 	
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')Create New Email List @endslot
 		
 		{{Form::open(['url'=>route('lists.store'), 'method'=>'POST'])}}

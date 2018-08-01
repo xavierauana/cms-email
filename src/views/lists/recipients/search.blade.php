@@ -2,7 +2,7 @@
 
 @section("content")
 	
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')Users @endslot
 		<form id="selectForm">
 			<table class="table">

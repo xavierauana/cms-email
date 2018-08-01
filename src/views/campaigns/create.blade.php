@@ -2,7 +2,7 @@
 
 @section("content")
 	
-	@component('cms::components.container')
+	@component('cms_email::components.nav_container')
 		@slot('title')Create New Email Campaign @endslot
 		
 		{{Form::open(['url'=>route('campaigns.store'), 'method'=>'POST'])}}
