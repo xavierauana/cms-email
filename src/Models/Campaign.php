@@ -54,7 +54,7 @@ class Campaign extends Model implements ContentGroupInterface
     public function getContentCacheKey(
         string $langCode, string $contentIdentifier
     ): string {
-        return "email_campaign_" . $this->id;
+        return "email_campaign_{$langCode}_{$contentIdentifier}";
     }
 
     // Access
@@ -72,8 +72,7 @@ class Campaign extends Model implements ContentGroupInterface
 
 
         foreach ($recipients as $recipient) {
-
-
+            
             $htmlContent = view(config('cms_email.template_folder') . "/" . $this->template)
                 ->with([
                     'name'      => $recipient->name,

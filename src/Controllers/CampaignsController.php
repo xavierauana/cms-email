@@ -2,7 +2,6 @@
 
 namespace Anacreation\CmsEmail\Controllers;
 
-use Anacreation\Cms\Models\Language;
 use Anacreation\Cms\Models\Role;
 use Anacreation\CmsEmail\Models\Campaign;
 use Anacreation\CmsEmail\Models\EmailList;
@@ -53,19 +52,23 @@ class CampaignsController extends Controller
     public function store(Request $request) {
         //        $this->authorize('store', $language);
 
-
         $validateData = $this->validate($request, [
             'title'         => 'required',
             'subject'       => 'required',
             'from_name'     => 'required',
             'from_address'  => 'required|email',
             'reply_address' => 'required|email',
-            'template'      => 'required|in:' . implode(",",
-                    $this->getEmailTemplates()),
+            'template'      => [
+                'required',
+                Rule::in($this->getEmailTemplates())
+            ],
             'is_scheduled'  => 'required|boolean',
-            'email_list_id' => 'required_without:role_id|nullable|in:' . implode(",",
-                    EmailList::pluck('id')->toArray()),
-            'role_id'       => 'required_without:email_list_id|nullable|in:' . implode(",",
+            'email_list_id' => [
+                'required_without:role_id',
+                'nullable',
+                Rule::in(EmailList::pluck('id')->toArray())
+            ],
+            'role_id'       => 'required_without:email_list_id|nullable|in:' . implode(", ",
                     Role::pluck('id')->toArray()),
             'schedule'      => 'required_if:is_scheduled,1|nullable|date|after_or_equal:' . Carbon::now()
                                                                                                   ->toDateTimeString(),
@@ -85,7 +88,7 @@ class CampaignsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Language $language
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
      * @return Response
      */
     public function show(Campaign $campaign) {
@@ -163,7 +166,7 @@ class CampaignsController extends Controller
 
     private function getEmailTemplates(): array {
 
-        $path = resource_path("views/emails/layouts");
+        $path = resource_path("views/" . config("cms_email.template_folder"));
 
         $templates = [];
         try {
@@ -173,7 +176,7 @@ class CampaignsController extends Controller
 
         }
 
-        return $templates['templates'];
+        return $templates['templates'] ?? [];
     }
 
     public function send(Campaign $campaign) {
