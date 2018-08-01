@@ -66,12 +66,12 @@ class Campaign extends Model implements ContentGroupInterface
     }
 
     // Mutator
-    public function setRoleIdAttribute($value): Collection {
+    public function setRoleIdAttribute($value): void {
 
         $this->attributes['role_id'] = strlen($value) === 0 ? null : $value;
     }
 
-    public function setEmailListIdAttribute($value): Collection {
+    public function setEmailListIdAttribute($value): void {
 
         $this->attributes['email_list_id'] = strlen($value) === 0 ? null : $value;
     }
