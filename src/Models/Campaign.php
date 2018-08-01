@@ -65,6 +65,17 @@ class Campaign extends Model implements ContentGroupInterface
                new Collection();
     }
 
+    // Mutator
+    public function setRoleIdAttribute($value): Collection {
+
+        $this->attributes['role_id'] = strlen($value) === 0 ? null : $value;
+    }
+
+    public function setEmailListIdAttribute($value): Collection {
+
+        $this->attributes['email_list_id'] = strlen($value) === 0 ? null : $value;
+    }
+
     // Helper 
     public function launch() {
 
@@ -72,7 +83,7 @@ class Campaign extends Model implements ContentGroupInterface
 
 
         foreach ($recipients as $recipient) {
-            
+
             $htmlContent = view(config('cms_email.template_folder') . "/" . $this->template)
                 ->with([
                     'name'      => $recipient->name,

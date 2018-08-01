@@ -68,8 +68,11 @@ class CampaignsController extends Controller
                 'nullable',
                 Rule::in(EmailList::pluck('id')->toArray())
             ],
-            'role_id'       => 'required_without:email_list_id|nullable|in:' . implode(", ",
-                    Role::pluck('id')->toArray()),
+            'role_id'       => [
+                'required_without:email_list_id',
+                'nullable',
+                Rule::in(Role::pluck('id')->toArray())
+            ],
             'schedule'      => 'required_if:is_scheduled,1|nullable|date|after_or_equal:' . Carbon::now()
                                                                                                   ->toDateTimeString(),
         ]);
