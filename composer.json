@@ -3,27 +3,27 @@
   "description": "Email package for CMS",
   "type": "lib",
   "require": {
-	"anacreation/cms": "dev-master",
-	"anacreation/notification-provider": "dev-master"
+    "anacreation/cms": "^0.1",
+    "anacreation/notification-provider": "dev-master"
   },
   "license": "MIT",
   "authors": [
-	{
-	  "name": "Xavier Au",
-	  "email": "xavier.au@anacreation.com"
-	}
+    {
+      "name": "Xavier Au",
+      "email": "xavier.au@anacreation.com"
+    }
   ],
   "autoload": {
-	"psr-4": {
-	  "Anacreation\\CmsEmail\\": "src/"
-	}
+    "psr-4": {
+      "Anacreation\\CmsEmail\\": "src/"
+    }
   },
   "minimum-stability": "dev",
   "extra": {
-	"laravel": {
-	  "providers": [
-		"Anacreation\\CmsEmail\\CmsEmailServiceProvider"
-	  ]
-	}
+    "laravel": {
+      "providers": [
+        "Anacreation\\CmsEmail\\CmsEmailServiceProvider"
+      ]
+    }
   }
 }
