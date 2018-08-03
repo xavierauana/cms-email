@@ -54,9 +54,12 @@ class CmsEmailServiceProvider extends ServiceProvider
                         Log::info('Schedule Carbon: ' . $schedule);
                         Log::info('New now and schedule class: ' . get_class($schedule) . " " . get_class($newNow));
                         Log::info('Is now bigger: ' . $newNow->gt($schedule) ? "Yes" : "No");
+                        Log::info('Campaign Title: ' . $campaign->title);
 
                         if ($newNow->gt($schedule)) {
                             $campaign->launch();
+                            Log::info('Campaign send in : ' . Carbon::now()
+                                                                    ->toDateTimeString());
                         }
                     });
             })->everyMinute();
