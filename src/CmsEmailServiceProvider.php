@@ -43,6 +43,8 @@ class CmsEmailServiceProvider extends ServiceProvider
                         ->get()->each(function (Campaign $campaign) {
                         $timezone = new DateTimeZone(config('app.timezone'));
                         $now = Carbon::now($timezone);
+                        $now->addMinute(config('scheduler_time_offset_minutes',
+                            0));
                         $schedule = $campaign->schedule;
                         if ($now->gt($schedule)) {
                             $campaign->launch();
