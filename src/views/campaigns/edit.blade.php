@@ -93,7 +93,8 @@
 		
 		<div class="form-group">
 			{{Form::label('is_scheduled', 'Is Scheduled')}}
-			{{Form::select('is_scheduled', [0=>'No', 1=>'Yes'],0,[
+			{{Form::select('is_scheduled', [0=>'No', 1=>'Yes'],old('schedule')?:$campaign->is_scheduled
+			,[
 			'class'=>'form-control',
 			'onchange'=>'toggleDateTimeInput(event)',
 			'required',
@@ -108,7 +109,7 @@
 		<div class="form-group" id="schedule-container" style="display: none">
 			{{Form::label('schedule', 'Schedule at')}}
 			<base-datetime name="schedule"
-			               value="{{old('schedule')?:''}}"></base-datetime>
+			               value="{{old('schedule')?:$campaign->schedule}}"></base-datetime>
 			@if ($errors->has('schedule'))
 				<span class="help-block">
 					<strong>{{ $errors->first('schedule') }}</strong>
@@ -128,18 +129,19 @@
 @endsection
 
 @section('scripts')
+    <?php
+    $check = old('is_scheduled') ?? $campaign->is_scheduled;
+    ?>
 	<script>
 		function toggleDateTimeInput(e) {
           var el = document.querySelector("#schedule-container")
-          if (e.target.value === '1') {
-            $(el).show()
-          } else {
-            $(el).hide()
-          }
+          e.target.value === '1' ? $(el).show() : $(el).hide()
         }
 		
-		@if(old('is_scheduled') === '1')
+		@if($check or $check === "1")
+
         toggleDateTimeInput({target: {value: '1'}})
+		
 		@endif
 	</script>
 @endsection

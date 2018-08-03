@@ -42,7 +42,8 @@ class CampaignsController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request $request
+     * @param  Request                              $request
+     * @param \Anacreation\CmsEmail\Models\Campaign $repo
      * @return Response
      */
     public function store(Request $request, Campaign $repo) {

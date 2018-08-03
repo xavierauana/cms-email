@@ -16,7 +16,6 @@ use Anacreation\CmsEmail\Controllers\EmailListsController;
 use Carbon\Carbon;
 use DateTimeZone;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 class CmsEmail
@@ -80,9 +79,10 @@ class CmsEmail
                     $now = Carbon::now($timezone);
                     $schedule = $campaign->schedule;
 
-                    Log::info("log campaign schedule");
-                    Log::info($now);
-                    Log::info($schedule);
+//                    Log::info("log campaign schedule");
+                    //                    Log::info($now);
+                    //                    Log::info($schedule);
+                    //                    Log::info($now->gt($schedule)?"Now is greater":"Schedule is greater");
                     if ($now->gt($schedule)) {
                         $campaign->launch();
                     }

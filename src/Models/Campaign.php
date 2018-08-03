@@ -47,7 +47,6 @@ class Campaign extends Model implements ContentGroupInterface
     protected $dates = [
         'created_at',
         'updated_at',
-        'schedule'
     ];
 
     // Relation
