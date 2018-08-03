@@ -7,7 +7,7 @@
 
 return [
     'template_folder'               => 'emails/layouts',
-    'scheduler_time_offset_minutes' => 0,
+    'scheduler_time_offset_minutes' => -4,
     'username'                      => "apikey",
     'password'                      => "",
 ];

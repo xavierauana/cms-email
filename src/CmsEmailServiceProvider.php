@@ -44,11 +44,17 @@ class CmsEmailServiceProvider extends ServiceProvider
                         $timezone = new DateTimeZone(config('app.timezone'));
                         $now = Carbon::now($timezone);
                         Log::info('Now: ' . $now->toTimeString());
-                        $newNow = $now->addMinutes(config('scheduler_time_offset_minutes',
+                        $newNow = $now->addMinutes(config('cms_email.scheduler_time_offset_minutes',
                             0));
+                        Log::info('Offset: ' . config('scheduler_time_offset_minutes',
+                                0));
                         Log::info('New now: ' . $newNow->toTimeString());
-                        $schedule = $campaign->schedule;
-                        Log::info('Schedule: ' . $schedule->toTimeString());
+                        Log::info('Schedule: ' . $campaign->schedule);
+                        $schedule = new Carbon($campaign->schedule);
+                        Log::info('Schedule Carbon: ' . $schedule);
+                        Log::info('New now and schedule class: ' . get_class($schedule) . " " . get_class($newNow));
+                        Log::info('Is now bigger: ' . $newNow->gt($schedule) ? "Yes" : "No");
+
                         if ($newNow->gt($schedule)) {
                             $campaign->launch();
                         }
