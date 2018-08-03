@@ -13,10 +13,6 @@ use Anacreation\CmsEmail\Controllers\CampaignRecipientsController;
 use Anacreation\CmsEmail\Controllers\CampaignsController;
 use Anacreation\CmsEmail\Controllers\EmailListRecipientsController;
 use Anacreation\CmsEmail\Controllers\EmailListsController;
-use Carbon\Carbon;
-use DateTimeZone;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 class CmsEmail
@@ -68,23 +64,5 @@ class CmsEmail
 
                     });
             });
-    }
-
-    public static function scheduler(Schedule $schedule) {
-        $schedule->call(function () {
-
-            Log::info("Cms Email scheduler method has run");
-
-            Campaign::whereNotNull('schedule')
-                    ->whereHasSent(false)
-                    ->get()->each(function (Campaign $campaign) {
-                    $timezone = new DateTimeZone(config('app.timezone'));
-                    $now = Carbon::now($timezone);
-                    $schedule = $campaign->schedule;
-                    if ($now->gt($schedule)) {
-                        $campaign->launch();
-                    }
-                });
-        })->everyMinute();
     }
 }
