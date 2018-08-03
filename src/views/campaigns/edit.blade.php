@@ -29,6 +29,27 @@
 		
 		
 		<div class="form-group">
+			{{Form::label('email_list_id', 'Email List')}}
+			{{Form::select('email_list_id', \Anacreation\CmsEmail\Models\EmailList::pluck("title","id")->toArray(),null, ['class'=>'form-control', 'placeholder'=>'Email List'])}}
+			@if ($errors->has('email_list_id'))
+				<span class="help-block">
+					<strong>{{ $errors->first('email_list_id') }}</strong>
+				</span>
+			@endif
+		</div>
+		
+		<div class="form-group">
+			{{Form::label('role_id', 'User Role')}}
+			{{Form::select('role_id', \Anacreation\Cms\Models\Role::pluck("label","id")->toArray(),null, ['class'=>'form-control', 'placeholder'=>'User Role'])}}
+			@if ($errors->has('role_id'))
+				<span class="help-block">
+					<strong>{{ $errors->first('role_id') }}</strong>
+				</span>
+			@endif
+		</div>
+		
+		
+		<div class="form-group">
 			{{Form::label('from_name', 'From Name')}}
 			{{Form::text('from_name', null, ['class'=>'form-control', 'placeholder'=>'From Name'])}}
 			@if ($errors->has('from_name'))

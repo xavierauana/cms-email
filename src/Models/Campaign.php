@@ -7,10 +7,12 @@ use Anacreation\Cms\Models\Role;
 use Anacreation\Cms\traits\ContentGroup;
 use Anacreation\CmsEmail\Jobs\SendEmail;
 use Anacreation\Notification\Provider\Contracts\EmailSender;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 
 class Campaign extends Model implements ContentGroupInterface
 {
@@ -109,4 +111,48 @@ class Campaign extends Model implements ContentGroupInterface
         $this->has_sent = true;
         $this->save();
     }
+
+    public function getFormValidationRules(): array {
+        return [
+            'title'         => 'required',
+            'subject'       => 'required',
+            'from_name'     => 'required',
+            'from_address'  => 'required|email',
+            'reply_address' => 'required|email',
+            'template'      => [
+                'required',
+                Rule::in($this->getEmailTemplates())
+            ],
+            'is_scheduled'  => 'required|boolean',
+            'email_list_id' => [
+                'required_without:role_id',
+                'nullable',
+                Rule::in(EmailList::pluck('id')->toArray())
+            ],
+            'role_id'       => [
+                'required_without:email_list_id',
+                'nullable',
+                Rule::in(Role::pluck('id')->toArray())
+            ],
+            'schedule'      => 'required_if:is_scheduled,1|nullable|date|after_or_equal:' . Carbon::now()
+                                                                                                  ->toDateTimeString(),
+        ];
+    }
+
+    public function getEmailTemplates(): array {
+
+        $path = resource_path("views/" . config("cms_email.template_folder"));
+
+        $templates = [];
+        try {
+            $templates = scandir($path);
+            $templates = sanitizeFileNames(compact("templates"));
+        } catch (\Exception $e) {
+
+        }
+
+        return $templates['templates'] ?? [];
+    }
+
+
 }

@@ -2,14 +2,10 @@
 
 namespace Anacreation\CmsEmail\Controllers;
 
-use Anacreation\Cms\Models\Role;
 use Anacreation\CmsEmail\Models\Campaign;
-use Anacreation\CmsEmail\Models\EmailList;
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\Rule;
 
 
 class CampaignsController extends Controller
@@ -32,11 +28,11 @@ class CampaignsController extends Controller
      *
      * @return Response
      */
-    public function create() {
+    public function create(Campaign $campaign) {
         //        $this->authorize('create', $language);
 
 
-        $templates = $this->getEmailTemplates();
+        $templates = $campaign->getEmailTemplates();
 
 
         return view('cms_email::campaigns.create', compact('templates'));
@@ -49,40 +45,18 @@ class CampaignsController extends Controller
      * @param  Request $request
      * @return Response
      */
-    public function store(Request $request) {
+    public function store(Request $request, Campaign $repo) {
         //        $this->authorize('store', $language);
 
-        $validateData = $this->validate($request, [
-            'title'         => 'required',
-            'subject'       => 'required',
-            'from_name'     => 'required',
-            'from_address'  => 'required|email',
-            'reply_address' => 'required|email',
-            'template'      => [
-                'required',
-                Rule::in($this->getEmailTemplates())
-            ],
-            'is_scheduled'  => 'required|boolean',
-            'email_list_id' => [
-                'required_without:role_id',
-                'nullable',
-                Rule::in(EmailList::pluck('id')->toArray())
-            ],
-            'role_id'       => [
-                'required_without:email_list_id',
-                'nullable',
-                Rule::in(Role::pluck('id')->toArray())
-            ],
-            'schedule'      => 'required_if:is_scheduled,1|nullable|date|after_or_equal:' . Carbon::now()
-                                                                                                  ->toDateTimeString(),
-        ]);
+        $validateData = $this->validate($request,
+            $repo->getFormValidationRules());
 
 
         if (!$validateData['is_scheduled']) {
             $validateData['schedule'] = null;
         }
 
-        $newCampaign = Campaign::create($validateData);
+        $newCampaign = $repo->create($validateData);
 
         return redirect()->route('campaigns.index')
                          ->withStatus("New email campaign: {$newCampaign->title} is created!");
@@ -102,14 +76,14 @@ class CampaignsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Language $language
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
      * @return Response
      */
     public function edit(Campaign $campaign) {
         //        $this->authorize('edit', $language);
 
 
-        $templates = $this->getEmailTemplates();
+        $templates = $campaign->getEmailTemplates();
 
         return view('cms_email::campaigns.edit',
             compact('campaign', 'templates'));
@@ -118,38 +92,25 @@ class CampaignsController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  Language $language
+     * @param  Request                              $request
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
      * @return Response
      */
-    public function update(Request $request, Language $language) {
-        $this->authorize('update', $language);
+    public function update(Request $request, Campaign $campaign) {
+        //        $this->authorize('update', $language);
 
-        $validateData = $this->validate($request, [
-            'label'                => 'required',
-            'code'                 => [
-                'required',
-                Rule::unique('languages')->ignore($language->id, 'id')
-            ],
-            'is_active'            => 'required|boolean',
-            'is_default'           => 'required|boolean',
-            'fallback_language_id' => 'required|in:0,' . implode(',',
-                    Language::pluck('id')->toArray()),
-        ]);
+        $validateData = $this->validate($request,
+            $campaign->getFormValidationRules());
 
 
-        if ($validateData['is_default'] == "1") {
-            Language::where('id', '<>', $language->id)->get()->each(function (
-                Language $language
-            ) {
-                $language->is_default = false;
-                $language->save();
-            });
+        if (!$validateData['is_scheduled']) {
+            $validateData['schedule'] = null;
         }
 
-        $language->update($validateData);
+        $campaign->update($validateData);
 
-        return redirect()->route('languages.index');
+        return redirect()->route('campaigns.index')
+                         ->withStatus("Campaign: {$campaign->title} is updated!");
     }
 
     /**
@@ -167,20 +128,6 @@ class CampaignsController extends Controller
         return response()->json(['status' => 'completed']);
     }
 
-    private function getEmailTemplates(): array {
-
-        $path = resource_path("views/" . config("cms_email.template_folder"));
-
-        $templates = [];
-        try {
-            $templates = scandir($path);
-            $templates = sanitizeFileNames(compact("templates"));
-        } catch (\Exception $e) {
-
-        }
-
-        return $templates['templates'] ?? [];
-    }
 
     public function send(Campaign $campaign) {
 
