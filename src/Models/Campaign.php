@@ -105,7 +105,9 @@ class Campaign extends Model implements ContentGroupInterface
                           ->subject($this->subject)
                           ->htmlContent($htmlContent);
 
-            SendEmail::dispatch($emailProvider, $this);
+            SendEmail::dispatch($emailProvider, $this)
+                     ->onConnection('redis')
+                     ->onQueue('email');
         }
 
         $this->has_sent = true;
