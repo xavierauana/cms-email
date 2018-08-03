@@ -44,6 +44,12 @@ class Campaign extends Model implements ContentGroupInterface
         'is_scheduled' => 'Boolean'
     ];
 
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'schedule'
+    ];
+
     // Relation
     public function list(): Relation {
         return $this->belongsTo(EmailList::class, 'email_list_id');
