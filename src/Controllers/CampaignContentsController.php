@@ -2,6 +2,7 @@
 
 namespace Anacreation\CmsEmail\Controllers;
 
+use Anacreation\Cms\Models\ContentIndex;
 use Anacreation\Cms\Services\ContentService;
 use Anacreation\Cms\Services\LanguageService;
 use Anacreation\CmsEmail\Models\Campaign;
@@ -30,15 +31,25 @@ class CampaignContentsController extends Controller
             compact('campaign', 'contents', 'languages'));
     }
 
+    /**
+     * @param \Illuminate\Http\Request                 $request
+     * @param \Anacreation\CmsEmail\Models\Campaign    $campaign
+     * @param \Anacreation\Cms\Models\ContentIndex     $contentIndex
+     * @param \Anacreation\Cms\Services\ContentService $service
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Anacreation\Cms\Exceptions\IncorrectContentTypeException
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function update(
-        Request $request, Campaign $campaign, ContentService $service
+        Request $request, Campaign $campaign, ContentIndex $contentIndex,
+        ContentService $service
     ) {
-        $validatedData = $this->validate($request,
+        $this->authorize('update', $contentIndex);
+
+        $this->validate($request,
             $service->getUpdateValidationRules());
 
-        $service->updateOrCreateContentIndex($campaign,
-            $service->createContentObject($validatedData),
-            $request->file('content'));
+        $service->updateOrCreateContentIndex($campaign, $request);
 
         return response()->json("done");
     }
