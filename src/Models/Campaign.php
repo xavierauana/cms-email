@@ -61,7 +61,7 @@ class Campaign extends Model implements ContentGroupInterface
     public function getContentCacheKey(
         string $langCode, string $contentIdentifier
     ): string {
-        return "email_campaign_{$langCode}_{$contentIdentifier}";
+        return "email_campaign_{$this->id}_{$langCode}_{$contentIdentifier}";
     }
 
     // Access

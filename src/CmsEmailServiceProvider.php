@@ -43,12 +43,13 @@ class CmsEmailServiceProvider extends ServiceProvider
                         ->get()->each(function (Campaign $campaign) {
                         $timezone = new DateTimeZone(config('app.timezone'));
                         $now = Carbon::now($timezone);
-                        Log::info($now->toTimeString());
-                        $now->addMinutes(config('scheduler_time_offset_minutes',
+                        Log::info('Now: ' . $now->toTimeString());
+                        $newNow = $now->addMinutes(config('scheduler_time_offset_minutes',
                             0));
-                        Log::info($now->toTimeString());
+                        Log::info('New now: ' . $newNow->toTimeString());
                         $schedule = $campaign->schedule;
-                        if ($now->gt($schedule)) {
+                        Log::info('Schedule: ' . $schedule->toTimeString());
+                        if ($newNow->gt($schedule)) {
                             $campaign->launch();
                         }
                     });
