@@ -13,6 +13,7 @@ use Anacreation\CmsEmail\Controllers\CampaignRecipientsController;
 use Anacreation\CmsEmail\Controllers\CampaignsController;
 use Anacreation\CmsEmail\Controllers\EmailListRecipientsController;
 use Anacreation\CmsEmail\Controllers\EmailListsController;
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Route;
 
