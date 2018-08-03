@@ -93,6 +93,7 @@ class Campaign extends Model implements ContentGroupInterface
                     'recipient' => $recipient,
                     'user'      => $recipient->user,
                 ])->render();
+
             $emailProvider = app()->makeWith(EmailSender::class,
                 [
                     'username' => config("cms_email.username"),
@@ -106,7 +107,6 @@ class Campaign extends Model implements ContentGroupInterface
                           ->htmlContent($htmlContent);
 
             SendEmail::dispatch($emailProvider, $this)
-                     ->onConnection('redis')
                      ->onQueue('email');
         }
 
