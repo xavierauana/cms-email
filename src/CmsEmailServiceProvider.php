@@ -82,7 +82,7 @@ class CmsEmailServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/views', 'cms_email');
 
         $this->publishes([
-            __DIR__ . '/views' => resource_path('views/vendor/cms/email'),
+            __DIR__ . '/views' => resource_path('views/vendor/cms_email'),
         ], 'cms_email_views');
 
     }
