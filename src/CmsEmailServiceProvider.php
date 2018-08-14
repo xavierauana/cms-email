@@ -3,6 +3,7 @@
 namespace Anacreation\CmsEmail;
 
 use Anacreation\Cms\Models\Cms;
+use Anacreation\CmsEmail\Commands\EmailCommand;
 use Anacreation\CmsEmail\Models\CmsEmail;
 use Anacreation\Notification\Provider\Contracts\EmailSender;
 use Anacreation\Notification\Provider\ServiceProviders\SendGrid;
@@ -10,6 +11,10 @@ use Illuminate\Support\ServiceProvider;
 
 class CmsEmailServiceProvider extends ServiceProvider
 {
+    protected $commands = [
+        EmailCommand::class
+    ];
+
     /**
      * Bootstrap any application services.
      *
@@ -26,6 +31,10 @@ class CmsEmailServiceProvider extends ServiceProvider
         $this->registerCmsPlugin();
 
         app()->bind(EmailSender::class, SendGrid::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands($this->commands);
+        }
 
     }
 

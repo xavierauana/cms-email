@@ -13,10 +13,6 @@ use Anacreation\CmsEmail\Controllers\CampaignRecipientsController;
 use Anacreation\CmsEmail\Controllers\CampaignsController;
 use Anacreation\CmsEmail\Controllers\EmailListRecipientsController;
 use Anacreation\CmsEmail\Controllers\EmailListsController;
-use Carbon\Carbon;
-use DateTimeZone;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 class CmsEmail
@@ -73,37 +69,5 @@ class CmsEmail
 
                     });
             });
-    }
-
-    public function schedule(Schedule $schedule)  {
-        $schedule->call(function () {
-
-            Log::info("Cms Email scheduler method has run");
-
-            Campaign::whereNotNull('schedule')
-                    ->whereHasSent(false)
-                    ->get()->each(function (Campaign $campaign) {
-                    $timezone = new DateTimeZone(config('app.timezone'));
-                    $now = Carbon::now($timezone);
-                    Log::info('Now: ' . $now->toTimeString());
-                    $newNow = $now->addMinutes(config('cms_email.scheduler_time_offset_minutes',
-                        0));
-                    Log::info('Offset: ' . config('scheduler_time_offset_minutes',
-                            0));
-                    Log::info('New now: ' . $newNow->toTimeString());
-                    Log::info('Schedule: ' . $campaign->schedule);
-                    $schedule = new Carbon($campaign->schedule);
-                    Log::info('Schedule Carbon: ' . $schedule);
-                    Log::info('New now and schedule class: ' . get_class($schedule) . " " . get_class($newNow));
-                    Log::info('Is now bigger: ' . $newNow->gt($schedule) ? "Yes" : "No");
-                    Log::info('Campaign Title: ' . $campaign->title);
-
-                    if ($newNow->gt($schedule)) {
-                        $campaign->launch();
-                        Log::info('Campaign send in : ' . Carbon::now()
-                                                                ->toDateTimeString());
-                    }
-                });
-        })->everyMinute();
     }
 }
