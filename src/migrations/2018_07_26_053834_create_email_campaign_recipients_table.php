@@ -12,7 +12,8 @@ class CreateEmailCampaignRecipientsTable extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('email_list_recipients',
+        Schema::create('
+        ',
             function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('name');

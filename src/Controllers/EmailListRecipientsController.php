@@ -77,6 +77,7 @@ class EmailListRecipientsController extends Controller
             'name'    => $validateData['name'],
             'email'   => $validateData['email'],
             'user_id' => null,
+            'status'  => Recipient::StatusTypes['pending']
         ];
 
         $recipient = $list->recipients()->create($data);
@@ -237,5 +238,18 @@ class EmailListRecipientsController extends Controller
         }
 
         return $count;
+    }
+
+    public function unsubscribe(EmailList $list, Request $request) {
+        if ($token = $request->query('token')) {
+            $data = decrypt($token);
+
+            if ((int)$data['list_id'] === $list->id) {
+                $list->recipients()
+                     ->whereEmail($data['email'])
+                     ->update(['status' => Recipient::StatusTypes['unsubscribe']]);
+
+            }
+        }
     }
 }

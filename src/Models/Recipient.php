@@ -13,8 +13,15 @@ class Recipient extends Model
     protected $fillable = [
         'name',
         'email',
+        'status',
         'user_id',
         'email_list_id',
+    ];
+
+    public const StatusTypes = [
+        'pending'     => 'pending',
+        'unsubscribe' => 'unsubscribe',
+        'confirmed'   => 'confirmed',
     ];
 
     // Relation
@@ -24,5 +31,15 @@ class Recipient extends Model
 
     public function user(): Relation {
         return $this->belongsTo(User::class);
+    }
+
+    // Mutator
+
+    public function setTokenAttribute() {
+        $data = [
+            'list_id' => $this->email_list_id,
+            'email'   => $this->email,
+        ];
+        $this->attributes['token'] = encrypt($data);
     }
 }

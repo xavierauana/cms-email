@@ -10,4 +10,6 @@ return [
     'scheduler_time_offset_minutes' => -4,
     'username'                      => "apikey",
     'password'                      => "",
+    'send_email_queue'              => "default",
+    'email_sender'                  => \Anacreation\Notification\Provider\ServiceProviders\SendGrid::class
 ];
