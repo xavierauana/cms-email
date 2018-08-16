@@ -30,4 +30,23 @@ class EmailList extends Model
     public function recipients(): Relation {
         return $this->hasMany(Recipient::class);
     }
+
+    public function updateRecipientStateWithToken(string $token, string $status
+    ): bool {
+
+        $data = decrypt($token);
+
+        if (isset($data['list_id']) and $data['email']) {
+            if ((int)$data['list_id'] === $this->id) {
+                $this->recipients()
+                     ->whereEmail($data['email'])
+                     ->update(['status' => $status]);
+
+                return true;
+            }
+        }
+
+
+        return false;
+    }
 }

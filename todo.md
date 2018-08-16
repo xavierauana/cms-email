@@ -1,10 +1,7 @@
 # TODO
 
-1. Create campaign
-    1. Select Template
-    2. Set Schedule (Schedule or Manual)
-2. Create Content
-3. Import or select recipeients
-
+1.  Update list recipient status
+2.  Upload template
+    1.
 
 

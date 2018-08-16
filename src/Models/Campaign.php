@@ -37,11 +37,12 @@ class Campaign extends Model implements ContentGroupInterface
         'email_list_id',
         'schedule',
         'has_sent',
+        'to_status'
     ];
 
     protected $casts = [
         'has_sent'     => 'Boolean',
-        'is_scheduled' => 'Boolean'
+        'is_scheduled' => 'Boolean',
     ];
 
     protected $dates = [
@@ -65,11 +66,40 @@ class Campaign extends Model implements ContentGroupInterface
     }
 
     // Access
+
+    public function getToStatusAttribute($value): array {
+        if ($data = unserialize($value)) {
+            return array_map('trim', $data);
+        } else {
+            return [];
+        }
+
+    }
+
     public function getRecipientsAttribute(): Collection {
 
-        return optional($this->list)->recipients ??
-               optional($this->role)->users ??
-               new Collection();
+        if ($this->list) {
+            $query = $this->list->recipients();
+
+            $statues = $this->to_status;
+
+            $count = 0;
+            foreach ($statues as $state) {
+                if ($count == 0) {
+                    $query->where('status', $state);
+                } else {
+                    $query->orWhere('status', $state);
+                }
+                $count++;
+            }
+
+            return $query->get();
+
+        } elseif ($this->role) {
+            return $this->role->users;
+        } else {
+            return new Collection();
+        }
     }
 
     // Mutator
@@ -83,13 +113,14 @@ class Campaign extends Model implements ContentGroupInterface
         $this->attributes['email_list_id'] = strlen($value) === 0 ? null : $value;
     }
 
-    // Helper 
+    public function setToStatusAttribute($value): void {
+        $this->attributes['to_status'] = serialize(array_map('trim', $value));
+    }
+
+    // Helper
     public function launch() {
 
-        $recipients = $this->recipients;
-
-
-        foreach ($recipients as $recipient) {
+        foreach ($this->recipients as $recipient) {
 
             $htmlContent = view(config('cms_email.template_folder') . "/" . $this->template)
                 ->with([
@@ -161,5 +192,39 @@ class Campaign extends Model implements ContentGroupInterface
         return $templates['templates'] ?? [];
     }
 
+    public function unsubscribeLink(Recipient $recipient = null): string {
+        if ($recipient === null) {
+            return "";
+        }
+        $data = [
+            'list_id' => $this->email_list_id ?? 0,
+            'email'   => $recipient->email
+        ];
+
+        $token = encrypt($data);
+
+        return route('lists.unsubscribe',
+            [$this->email_list_id, 'token' => $token]);
+
+    }
+
+    public function confirmLink(Recipient $recipient = null): string {
+        if ($recipient === null) {
+            return "";
+        }
+        $data = [
+            'list_id' => $this->email_list_id ?? 0,
+            'email'   => $recipient->email
+        ];
+
+        $token = encrypt($data);
+
+        return route('lists.confirm',
+            [$this->email_list_id, 'token' => $token]);
+    }
+
+    public function getCampaignWebLink(): string {
+        return route('campaign.web', $this);
+    }
 
 }

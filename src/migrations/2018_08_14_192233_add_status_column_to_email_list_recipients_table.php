@@ -13,8 +13,8 @@ class AddStatusColumnToEmailListRecipientsTable extends Migration
      */
     public function up() {
         Schema::table('email_list_recipients', function (Blueprint $table) {
-            $table->string('status');
-            $table->string('token');
+            $table->string('status')->default('pending');
+            $table->string('token')->nullable();
         });
     }
 
@@ -24,6 +24,9 @@ class AddStatusColumnToEmailListRecipientsTable extends Migration
      * @return void
      */
     public function down() {
-        //
+        Schema::table('email_list_recipients', function (Blueprint $table) {
+            $table->dropColumn('status');
+            $table->dropColumn('token');
+        });
     }
 }

@@ -5,7 +5,7 @@
 	@component('cms_email::components.nav_container')
 		@slot('title')Create New Email Campaign @endslot
 		
-		{{Form::open(['url'=>route('campaigns.store'), 'method'=>'POST'])}}
+		{{Form::open(['url'=>route('campaigns.store'), 'method'=>'POST','files'=>true])}}
 		
 		<div class="form-group">
 			{{Form::label('title', 'Campaign Title')}}
@@ -87,6 +87,27 @@
 			@if ($errors->has('template'))
 				<span class="help-block">
 					<strong>{{ $errors->first('template') }}</strong>
+				</span>
+			@endif
+		</div>
+		
+		<div class="form-group">
+			{{Form::label('file', 'Upload Email Template')}}
+			{{Form::file('file',['class'=>'form-control'])}}
+			@if ($errors->has('file'))
+				<span class="help-block">
+					<strong>{{ $errors->first('file') }}</strong>
+				</span>
+			@endif
+		</div>
+		
+		
+		<div class="form-group">
+			{{Form::label('to_status[]', 'Upload Email Template')}}
+			{{Form::select('to_status[]',$recipientStatus,'confirmed', ['class'=>'form-control', 'multiple'])}}
+			@if ($errors->has('to_status'))
+				<span class="help-block">
+					<strong>{{ $errors->first('to_status') }}</strong>
 				</span>
 			@endif
 		</div>

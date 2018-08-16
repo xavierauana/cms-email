@@ -242,14 +242,27 @@ class EmailListRecipientsController extends Controller
 
     public function unsubscribe(EmailList $list, Request $request) {
         if ($token = $request->query('token')) {
-            $data = decrypt($token);
 
-            if ((int)$data['list_id'] === $list->id) {
-                $list->recipients()
-                     ->whereEmail($data['email'])
-                     ->update(['status' => Recipient::StatusTypes['unsubscribe']]);
+            if ($list->updateRecipientStateWithToken($token,
+                Recipient::StatusTypes['unsubscribed'])) {
+                return redirect('/')->with('email_notice',
+                    'You have subscribe from our email list.');
 
             }
         }
+
+        return redirect('/');
+    }
+
+    public function confirm(EmailList $list, Request $request) {
+        if ($token = $request->query('token')) {
+            if ($list->updateRecipientStateWithToken($token,
+                Recipient::StatusTypes['confirmed'])) {
+                return redirect('/')->with('email_notice',
+                    'Thank you for confirm the email');
+            }
+        }
+
+        return redirect('/');
     }
 }

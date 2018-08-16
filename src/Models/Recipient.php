@@ -19,9 +19,9 @@ class Recipient extends Model
     ];
 
     public const StatusTypes = [
-        'pending'     => 'pending',
-        'unsubscribe' => 'unsubscribe',
-        'confirmed'   => 'confirmed',
+        'pending'      => 'pending',
+        'unsubscribed' => 'unsubscribed',
+        'confirmed'    => 'confirmed',
     ];
 
     // Relation

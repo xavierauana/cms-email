@@ -27,11 +27,14 @@ class CmsEmail
         ],
             function () {
                 Route::get('email/campaigns/{campaign}',
-                    CampaignsController::class . "@show");
+                    CampaignsController::class . "@show")->name('campaign.web');
 
                 Route::get('lists/{list}/recipients/unsubscribe',
                     EmailListRecipientsController::class . "@unsubscribe")
                      ->name('lists.unsubscribe');
+                Route::get('lists/{list}/recipients/confirm',
+                    EmailListRecipientsController::class . "@confirm")
+                     ->name('lists.confirm');
 
                 Route::group(['prefix' => config('admin.route_prefix')],
                     function () {

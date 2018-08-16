@@ -12,25 +12,23 @@ class CreateEmailCampaignRecipientsTable extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('
-        ',
-            function (Blueprint $table) {
-                $table->increments('id');
-                $table->string('name');
-                $table->string('email');
-                $table->timestamps();
+        Schema::create('email_list_recipients', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
 
-                //Relation
-                $table->unsignedInteger('email_list_id');
-                $table->foreign('email_list_id')->references('id')
-                      ->on('email_lists');
-                $table->unsignedInteger('user_id')->nullable();
-                $table->foreign('user_id')->references('id')
-                      ->on('users');
+            //Relation
+            $table->unsignedInteger('email_list_id');
+            $table->foreign('email_list_id')->references('id')
+                  ->on('email_lists');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')
+                  ->on('users');
 
-                // Constraints
-                $table->unique(['email_list_id', 'email']);
-            });
+            // Constraints
+            $table->unique(['email_list_id', 'email']);
+        });
     }
 
     /**

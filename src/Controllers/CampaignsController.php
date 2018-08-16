@@ -3,6 +3,8 @@
 namespace Anacreation\CmsEmail\Controllers;
 
 use Anacreation\CmsEmail\Models\Campaign;
+use Anacreation\CmsEmail\Models\Recipient;
+use Anacreation\CmsEmail\Services\CampaignService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,6 +28,7 @@ class CampaignsController extends Controller
     /**
      * Show the form for creating a new resource.
      *
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
      * @return Response
      */
     public function create(Campaign $campaign) {
@@ -34,30 +37,25 @@ class CampaignsController extends Controller
 
         $templates = $campaign->getEmailTemplates();
 
+        $recipientStatus = Recipient::StatusTypes;
 
-        return view('cms_email::campaigns.create', compact('templates'));
+
+        return view('cms_email::campaigns.create',
+            compact('templates', 'recipientStatus'));
 
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request                              $request
-     * @param \Anacreation\CmsEmail\Models\Campaign $repo
+     * @param  Request                                       $request
+     * @param \Anacreation\CmsEmail\Services\CampaignService $service
      * @return Response
      */
-    public function store(Request $request, Campaign $repo) {
+    public function store(Request $request, CampaignService $service) {
         //        $this->authorize('store', $language);
 
-        $validateData = $this->validate($request,
-            $repo->getFormValidationRules());
-
-
-        if (!$validateData['is_scheduled']) {
-            $validateData['schedule'] = null;
-        }
-
-        $newCampaign = $repo->create($validateData);
+        $newCampaign = $service->createCampaign($request);
 
         return redirect()->route('campaigns.index')
                          ->withStatus("New email campaign: {$newCampaign->title} is created!");
@@ -70,8 +68,17 @@ class CampaignsController extends Controller
      * @return Response
      */
     public function show(Campaign $campaign) {
+
+        $data = [
+            'name'      => "",
+            'campaign'  => $campaign,
+            'recipient' => null,
+            'user'      => null,
+        ];
+
+
         return view(config('cms_email.template_folder') . ".{$campaign->template}",
-            compact('campaign'));
+            $data);
     }
 
     /**
@@ -86,29 +93,27 @@ class CampaignsController extends Controller
 
         $templates = $campaign->getEmailTemplates();
 
+        $recipientStatus = Recipient::StatusTypes;
+
         return view('cms_email::campaigns.edit',
-            compact('campaign', 'templates'));
+            compact('campaign', 'templates', 'recipientStatus'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request                              $request
-     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
+     * @param  Request                                       $request
+     * @param \Anacreation\CmsEmail\Models\Campaign          $campaign
+     * @param \Anacreation\CmsEmail\Services\CampaignService $service
      * @return Response
      */
-    public function update(Request $request, Campaign $campaign) {
+    public function update(
+        Request $request, Campaign $campaign, CampaignService $service
+    ) {
         //        $this->authorize('update', $language);
 
-        $validateData = $this->validate($request,
-            $campaign->getFormValidationRules());
+        $campaign = $service->updateCampaign($request, $campaign);
 
-
-        if (!$validateData['is_scheduled']) {
-            $validateData['schedule'] = null;
-        }
-
-        $campaign->update($validateData);
 
         return redirect()->route('campaigns.index')
                          ->withStatus("Campaign: {$campaign->title} is updated!");
