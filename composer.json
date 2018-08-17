@@ -23,7 +23,8 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Anacreation\\CmsEmail\\CmsEmailServiceProvider"
+        "Anacreation\\CmsEmail\\CmsEmailServiceProvider",
+        "Anacreation\\CmsEmail\\CmsEmailEventServiceProvider"
       ]
     }
   }

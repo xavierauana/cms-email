@@ -26,6 +26,11 @@ class CmsEmail
             ]
         ],
             function () {
+
+                Route::post('email/lists/{list}/registration',
+                    CampaignsController::class . "@registration")
+                     ->name('email.lists.registration');
+
                 Route::get('email/campaigns/{campaign}',
                     CampaignsController::class . "@show")->name('campaign.web');
 
@@ -43,7 +48,6 @@ class CmsEmail
                             'prefix'     => 'email'
                         ],
                             function () {
-
 
                                 Route::post('campaigns/{campaign}/send',
                                     CampaignsController::class . "@send");

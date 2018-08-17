@@ -3,6 +3,9 @@
 namespace Anacreation\CmsEmail\Controllers;
 
 use Anacreation\Cms\Models\Language;
+use Anacreation\CmsEmail\Events\EmailConfirmed;
+use Anacreation\CmsEmail\Events\EmailRegistration;
+use Anacreation\CmsEmail\Events\Unsubscribe;
 use Anacreation\CmsEmail\Exports\ListRecipientExport;
 use Anacreation\CmsEmail\Models\EmailList;
 use Anacreation\CmsEmail\Models\Recipient;
@@ -68,7 +71,6 @@ class EmailListRecipientsController extends Controller
      * @return Response
      */
     public function store(Request $request, EmailList $list) {
-        //        $this->authorize('store', $language);
 
         $validateData = $this->validate($request, [
             'name'  => 'required|',
@@ -79,7 +81,8 @@ class EmailListRecipientsController extends Controller
             'name'    => $validateData['name'],
             'email'   => $validateData['email'],
             'user_id' => null,
-            'status'  => Recipient::StatusTypes['pending']
+            'status'  => Recipient::StatusTypes[config("cms_email.manual_recipient_status",
+                'pending')]
         ];
 
         $recipient = $list->recipients()->create($data);
@@ -234,7 +237,12 @@ class EmailListRecipientsController extends Controller
             if ($list->recipients()->whereEmail($record['email'])->exists()) {
                 Log::info("{$record['email']} is duplicated for list {$list->title}, skip import");
             } else {
+
+                $record['status'] = Recipient::StatusTypes[config("cms_email.manual_recipient_status",
+                    'pending')];
+
                 $list->recipients()->create($record);
+
                 $count++;
             }
         }
@@ -242,11 +250,35 @@ class EmailListRecipientsController extends Controller
         return $count;
     }
 
+    public function registration(Request $request, EmailList $list) {
+        $validatedData = $this->validate($request, [
+            'name'  => 'nullable',
+            'email' => 'required|email'
+        ]);
+
+        if (!$list->recipients()->whereEmail($validatedData['email'])
+                  ->first()) {
+
+            /** @var Recipient $recipient */
+            $recipient = $list->recipients()->create([
+                "name"  => $validatedData['name'] ?? " ",
+                "email" => $validatedData['email'],
+            ]);
+
+            event(new EmailRegistration($list, $recipient));
+        }
+
+        return redirect()->back()
+                         ->withEmailNotice("Thank you for registration");
+    }
+
     public function unsubscribe(EmailList $list, Request $request) {
         if ($token = $request->query('token')) {
 
-            if ($list->updateRecipientStateWithToken($token,
+            if ($recipient = $list->updateRecipientStateWithToken($token,
                 Recipient::StatusTypes['unsubscribed'])) {
+
+                event(new Unsubscribe($list, $recipient));
 
                 $uri = config('cms_email.unsbuscribe_redirect_url', "/");
 
@@ -261,8 +293,11 @@ class EmailListRecipientsController extends Controller
 
     public function confirm(EmailList $list, Request $request) {
         if ($token = $request->query('token')) {
-            if ($list->updateRecipientStateWithToken($token,
+            if ($recipient = $list->updateRecipientStateWithToken($token,
                 Recipient::StatusTypes['confirmed'])) {
+
+                event(new EmailConfirmed($list, $recipient));
+
                 $uri = config('cms_email.confirmed_redirect_url', "/");
 
                 return redirect($uri)->with('email_notice',
@@ -273,7 +308,8 @@ class EmailListRecipientsController extends Controller
         return redirect('/');
     }
 
-    public function export(EmailList $list)  {
-        return Excel::download(new ListRecipientExport($list), 'recipients.xlsx');
+    public function export(EmailList $list) {
+        return Excel::download(new ListRecipientExport($list),
+            'recipients.xlsx');
     }
 }

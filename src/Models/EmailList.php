@@ -32,21 +32,24 @@ class EmailList extends Model
     }
 
     public function updateRecipientStateWithToken(string $token, string $status
-    ): bool {
+    ): Recipient {
 
         $data = decrypt($token);
 
         if (isset($data['list_id']) and $data['email']) {
             if ((int)$data['list_id'] === $this->id) {
-                $this->recipients()
-                     ->whereEmail($data['email'])
-                     ->update(['status' => $status]);
+                $recipient = $this->recipients()
+                                  ->whereEmail($data['email'])
+                                  ->first();
+                $recipient->updated([
+                    'status' => $status
+                ]);
 
-                return true;
+                return $recipient;
             }
         }
 
 
-        return false;
+        return null;
     }
 }

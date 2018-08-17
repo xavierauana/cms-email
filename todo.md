@@ -1,7 +1,6 @@
 # TODO
 
-1.  Update list recipient status
-2.  Upload template
-    1.
+1. Auto send confirmation email base one list setting
+2. Set email template for confirmation, welcome and goodbye
 
 
