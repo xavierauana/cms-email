@@ -17,7 +17,7 @@ class EmailList extends Model
         'title',
         'confirm_opt_in',
         'has_welcome_message',
-        'has_goodbye_message'
+        'has_goodbye_message',
     ];
 
     protected $casts = [

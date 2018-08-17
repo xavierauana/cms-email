@@ -2,13 +2,13 @@
 
 @section("content")
 	@component('cms_email::components.nav_container')
-		@slot('title')Edit Campaign: {{$campaign->title}} @endslot
+		@slot('title')Edit Campaign: {{$list->title}} @endslot
 		
-		{{Form::model($campaign, ['url'=>route('campaigns.update', $campaign->id), 'method'=>'PUT'])}}
+		{{Form::model($list, ['url'=>route('lists.update', $list), 'method'=>'PUT'])}}
 		
 		<div class="form-group">
-			{{Form::label('title', 'Campaign Title')}}
-			{{Form::text('title', null, ['class'=>'form-control', 'placeholder'=>'Campaign Title'])}}
+			{{Form::label('title', 'List Title')}}
+			{{Form::text('title', old('title')??$list->title, ['class'=>'form-control', 'placeholder'=>'List Title'])}}
 			@if ($errors->has('title'))
 				<span class="help-block">
 					<strong>{{ $errors->first('title') }}</strong>
@@ -16,88 +16,76 @@
 			@endif
 		</div>
 		
-		
+		<?php $check = old('confirm_opt_in')??$list->confirm_opt_in; ?>
 		<div class="form-group">
-			{{Form::label('subject', 'Email Subject')}}
-			{{Form::text('subject',null, ['class'=>'form-control', 'placeholder'=>'Email Subject','required'])}}
-			@if ($errors->has('subject'))
+			{{Form::label('confirm_opt_in', 'Opt-in confirmation needed')}}
+			<br>
+			<div class="btn-group btn-group-toggle" data-toggle="buttons">
+			  <label class="btn btn-outline-primary  @if($check) active @endif">
+			    <input type="radio" name="confirm_opt_in" autocomplete="off"
+			           value="1" @if($check) checked @endif> Yes
+			  </label>
+			  <label class="btn btn-outline-primary  @if(!$check) active @endif">
+			    <input type="radio" name="confirm_opt_in" autocomplete="off"
+			           value="0" @if(!$check) checked @endif> No
+			  </label>
+			</div>
+			@if ($errors->has('confirm_opt_in'))
 				<span class="help-block">
-					<strong>{{ $errors->first('subject') }}</strong>
+					<strong>{{ $errors->first('confirm_opt_in') }}</strong>
 				</span>
 			@endif
 		</div>
-		
-		
+
+        <?php $check = old('has_welcome_message')??$list->has_welcome_message; ?>
 		<div class="form-group">
-			{{Form::label('from_name', 'From Name')}}
-			{{Form::text('from_name', null, ['class'=>'form-control', 'placeholder'=>'From Name'])}}
-			@if ($errors->has('from_name'))
+			{{Form::label('has_welcome_message', 'Auto Send Welcome Message')}}
+			<br>
+			<div class="btn-group btn-group-toggle" data-toggle="buttons">
+			  <label class="btn btn-outline-primary  @if($check) active @endif">
+			    <input type="radio" name="has_welcome_message"
+			           autocomplete="off"
+			           value="1" @if($check) checked @endif> Yes
+			  </label>
+			  <label class="btn btn-outline-primary @if(!$check) active @endif">
+			    <input type="radio" name="has_welcome_message"
+			           autocomplete="off"
+			           value="0" @if(!$check) checked @endif> No
+			  </label>
+			</div>
+			@if ($errors->has('has_welcome_message'))
 				<span class="help-block">
-					<strong>{{ $errors->first('from_name') }}</strong>
+					<strong>{{ $errors->first('has_welcome_message') }}</strong>
 				</span>
 			@endif
 		</div>
-		
-		
+
+        <?php $check = old('has_goodbye_message')??$list->has_goodbye_message; ?>
 		<div class="form-group">
-			{{Form::label('from_address', 'From Address')}}
-			{{Form::text('from_address', null, ['class'=>'form-control', 'placeholder'=>'From Address'])}}
-			@if ($errors->has('from_address'))
+			{{Form::label('has_goodbye_message', 'Auto Send Goodbye Message')}}
+			<br>
+			<div class="btn-group btn-group-toggle" data-toggle="buttons">
+			  <label class="btn btn-outline-primary  @if($check) active @endif">
+			    <input type="radio" name="has_goodbye_message"
+			           autocomplete="off"
+			           value="1" @if($check) checked @endif> Yes
+			  </label>
+			  <label class="btn btn-outline-primary  @if(!$check) active @endif">
+			    <input type="radio" name="has_goodbye_message"
+			           autocomplete="off"
+			           value="0" @if(!$check) checked @endif> No
+			  </label>
+			</div>
+			@if ($errors->has('has_goodbye_message'))
 				<span class="help-block">
-					<strong>{{ $errors->first('from_address') }}</strong>
-				</span>
-			@endif
-		</div>
-		
-		<div class="form-group">
-			{{Form::label('reply_address', 'Reply Address')}}
-			{{Form::text('reply_address',null, ['class'=>'form-control', 'placeholder'=>'Reply Address'])}}
-			@if ($errors->has('reply_address'))
-				<span class="help-block">
-					<strong>{{ $errors->first('reply_address') }}</strong>
-				</span>
-			@endif
-		</div>
-		
-		
-		<div class="form-group">
-			{{Form::label('template', 'Email Template')}}
-			{{Form::select('template', array_combine($templates,$templates) ,null,['class'=>'form-control'])}}
-			@if ($errors->has('template'))
-				<span class="help-block">
-					<strong>{{ $errors->first('template') }}</strong>
-				</span>
-			@endif
-		</div>
-		
-		<div class="form-group">
-			{{Form::label('is_scheduled', 'Is Scheduled')}}
-			{{Form::select('is_scheduled', [0=>'No', 1=>'Yes'],0,[
-			'class'=>'form-control',
-			'onchange'=>'toggleDateTimeInput(event)',
-			'required',
-			])}}
-			@if ($errors->has('is_scheduled'))
-				<span class="help-block">
-					<strong>{{ $errors->first('is_scheduled') }}</strong>
-				</span>
-			@endif
-		</div>
-		
-		<div class="form-group" id="schedule-container" style="display: none">
-			{{Form::label('schedule', 'Schedule at')}}
-			<base-datetime name="schedule"
-			               value="{{old('schedule')?:''}}"></base-datetime>
-			@if ($errors->has('schedule'))
-				<span class="help-block">
-					<strong>{{ $errors->first('schedule') }}</strong>
+					<strong>{{ $errors->first('has_goodbye_message') }}</strong>
 				</span>
 			@endif
 		</div>
 		
 		<div class="form-group">
-			{{Form::submit('Edit', ['class'=>'btn btn-success'])}}
-			<a href='{{route('campaigns.index')}}' class="btn btn-info">Back</a>
+			{{Form::submit('Update', ['class'=>'btn btn-success'])}}
+			<a href='{{route('lists.index')}}' class="btn btn-info">Back</a>
 		</div>
 		
 		

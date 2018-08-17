@@ -69,7 +69,7 @@
 		
 		<div class="form-group">
 			{{Form::submit('Create', ['class'=>'btn btn-success'])}}
-			<a href='{{route('campaigns.index')}}' class="btn btn-info">Back</a>
+			<a href='{{route('lists.index')}}' class="btn btn-info">Back</a>
 		</div>
 		
 		
