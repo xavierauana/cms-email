@@ -11,6 +11,7 @@ return [
     'username'                      => "apikey",
     'password'                      => "",
     'enable_workflow'               => true,
+    'enable_import_job'             => false,
     'unsbuscribe_redirect_url'      => "/", // relative link
     'confirmed_redirect_url'        => "/", // relative link
     'send_email_queue'              => "default",

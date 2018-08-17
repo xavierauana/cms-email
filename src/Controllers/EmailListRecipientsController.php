@@ -7,14 +7,15 @@ use Anacreation\CmsEmail\Events\EmailConfirmed;
 use Anacreation\CmsEmail\Events\EmailRegistration;
 use Anacreation\CmsEmail\Events\Unsubscribe;
 use Anacreation\CmsEmail\Exports\ListRecipientExport;
+use Anacreation\CmsEmail\Jobs\ImportEmails;
 use Anacreation\CmsEmail\Models\EmailList;
 use Anacreation\CmsEmail\Models\Recipient;
+use Anacreation\CmsEmail\Services\ImportEmailService;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -187,10 +188,14 @@ class EmailListRecipientsController extends Controller
 
         list($headers, $rows) = $this->parseCSV($path);
 
-        $count = $this->createRecord($list, $rows, $headers);
+        if ($count = $this->createRecord($list, $rows, $headers)) {
+            $msg = "Total {$count} email imported";
+        } else {
+            $msg = "We are working on the import now. You can come back later!";
+        }
 
         return redirect()->route('lists.recipients.index', $list->id)
-                         ->withStatus("Total {$count} email imported");
+                         ->withStatus($msg);
     }
 
     public function showImport(EmailList $list) {
@@ -230,24 +235,23 @@ class EmailListRecipientsController extends Controller
      * @param                                        $headers
      * @return int
      */
-    private function createRecord(EmailList $list, $rows, $headers): int {
-        $count = 0;
-        foreach ($rows as $data) {
-            $record = array_combine($headers, $data);
-            if ($list->recipients()->whereEmail($record['email'])->exists()) {
-                Log::info("{$record['email']} is duplicated for list {$list->title}, skip import");
-            } else {
+    private function createRecord(EmailList $list, array $rows, array $headers
+    ): ?int {
 
-                $record['status'] = Recipient::StatusTypes[config("cms_email.manual_recipient_status",
-                    'pending')];
+        if (config("cms_email.enable_import_job", false)) {
+            ImportEmails::dispatch($list, $headers, $rows);
+        } else {
+            $count = 0;
 
-                $list->recipients()->create($record);
+            $service = new ImportEmailService();
 
-                $count++;
-            }
+            $service->createRecord($list, $rows, $headers, $count);
+
+            return $count;
         }
 
-        return $count;
+        return null;
+
     }
 
     public function registration(Request $request, EmailList $list) {

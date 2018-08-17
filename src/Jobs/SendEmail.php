@@ -40,6 +40,16 @@ class SendEmail implements ShouldQueue
      * @return void
      */
     public function handle() {
+
+
+
+
+
+
+
+
+
+
         $this->emailSender->send(['campaign_id' => $this->campaign->id]);
     }
 }

@@ -42,7 +42,7 @@
 				@endforeach
 				</tbody>
 			</table>
-			{{$recipients->links()}}
+			{!! $recipients->links() !!}
 		</div>
 	@endcomponent
 

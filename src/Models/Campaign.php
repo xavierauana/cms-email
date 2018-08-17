@@ -142,7 +142,7 @@ class Campaign extends Model implements ContentGroupInterface
                           ->subject($this->subject)
                           ->htmlContent($htmlContent);
 
-            SendEmail::dispatch($emailProvider, $this)
+            SendEmail::dispatch($emailProvider, $this, $recipient)
                      ->onQueue(config("cms_email.send_email_queue", "default"));
         }
 
