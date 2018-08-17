@@ -103,7 +103,7 @@
 		
 		
 		<div class="form-group">
-			{{Form::label('to_status[]', 'Upload Email Template')}}
+			{{Form::label('to_status[]', 'To Recipients With Status')}}
 			{{Form::select('to_status[]',$recipientStatus,'confirmed', ['class'=>'form-control', 'multiple'])}}
 			@if ($errors->has('to_status'))
 				<span class="help-block">
