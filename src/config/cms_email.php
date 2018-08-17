@@ -10,6 +10,8 @@ return [
     'scheduler_time_offset_minutes' => -4,
     'username'                      => "apikey",
     'password'                      => "",
+    'unsbuscribe_redirect_url'      => "/", // relative link
+    'confirmed_redirect_url'        => "/", // relative link
     'send_email_queue'              => "default",
     'email_sender'                  => \Anacreation\Notification\Provider\ServiceProviders\SendGrid::class
 ];

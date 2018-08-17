@@ -245,7 +245,10 @@ class EmailListRecipientsController extends Controller
 
             if ($list->updateRecipientStateWithToken($token,
                 Recipient::StatusTypes['unsubscribed'])) {
-                return redirect('/')->with('email_notice',
+
+                $uri = config('cms_email.unsbuscribe_redirect_url', "/");
+
+                return redirect($uri)->with('email_notice',
                     'You have subscribe from our email list.');
 
             }
@@ -258,7 +261,9 @@ class EmailListRecipientsController extends Controller
         if ($token = $request->query('token')) {
             if ($list->updateRecipientStateWithToken($token,
                 Recipient::StatusTypes['confirmed'])) {
-                return redirect('/')->with('email_notice',
+                $uri = config('cms_email.confirmed_redirect_url', "/");
+
+                return redirect($uri)->with('email_notice',
                     'Thank you for confirm the email');
             }
         }
