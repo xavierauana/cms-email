@@ -60,6 +60,10 @@ class CmsEmail
                                 Route::resource('lists',
                                     EmailListsController::class);
 
+                                Route::get('lists/{list}/recipients/export',
+                                    EmailListRecipientsController::class . "@export")
+                                     ->name('lists.recipients.export');
+
                                 Route::get('lists/{list}/recipients/import',
                                     EmailListRecipientsController::class . "@showImport")
                                      ->name('lists.recipients.import');

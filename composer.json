@@ -4,7 +4,8 @@
   "type": "lib",
   "require": {
     "anacreation/cms": "^0.1",
-    "anacreation/notification-provider": "dev-master"
+    "anacreation/notification-provider": "dev-master",
+    "maatwebsite/excel": "^3.0"
   },
   "license": "MIT",
   "authors": [

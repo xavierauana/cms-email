@@ -3,6 +3,7 @@
 namespace Anacreation\CmsEmail\Controllers;
 
 use Anacreation\Cms\Models\Language;
+use Anacreation\CmsEmail\Exports\ListRecipientExport;
 use Anacreation\CmsEmail\Models\EmailList;
 use Anacreation\CmsEmail\Models\Recipient;
 use App\Http\Controllers\Controller;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class EmailListRecipientsController extends Controller
@@ -269,5 +271,9 @@ class EmailListRecipientsController extends Controller
         }
 
         return redirect('/');
+    }
+
+    public function export(EmailList $list)  {
+        return Excel::download(new ListRecipientExport($list), 'recipients.xlsx');
     }
 }

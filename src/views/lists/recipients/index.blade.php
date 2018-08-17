@@ -5,6 +5,8 @@
 	@component('cms_email::components.nav_container')
 		@slot('title')
 			Recipients for Email List: {{$list->title}}
+			<a href="{{route('lists.recipients.export',$list)}}"
+			   class="btn btn-sm btn-info pull-right">Export recipient</a>
 			<a href="{{route('lists.recipients.create',$list)}}"
 			   class="btn btn-sm btn-success pull-right">Add new recipient</a>
 			<a href="{{route('lists.recipients.import',$list)}}"
