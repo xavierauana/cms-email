@@ -2,14 +2,16 @@
 
 namespace Anacreation\CmsEmail\Models;
 
-use Anacreation\Cms\traits\ContentGroup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailList extends Model
 {
 
-    use ContentGroup;
+    //    use ContentGroup;
+
+    use SoftDeletes;
 
     protected $table = 'email_lists';
 

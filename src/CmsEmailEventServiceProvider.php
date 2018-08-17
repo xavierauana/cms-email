@@ -38,9 +38,7 @@ class CmsEmailEventServiceProvider extends ServiceProvider
     public function boot() {
         $check = config('cms_email.enable_workflow', "true") === true;
 
-        if ($check) {
-            parent::boot();
-        }
+        if ($check) parent::boot();
     }
 
 }
