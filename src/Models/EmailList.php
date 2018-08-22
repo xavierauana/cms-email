@@ -44,7 +44,7 @@ class EmailList extends Model
                 $recipient = $this->recipients()
                                   ->whereEmail($data['email'])
                                   ->first();
-                
+
                 $recipient->update([
                     'status' => $status
                 ]);

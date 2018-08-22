@@ -15,7 +15,7 @@ class AddToAllColumnToEmailCampaignsTable extends Migration
     public function up() {
         Schema::table('email_campaigns', function (Blueprint $table) {
             $table->text("to_status")
-                  ->defalut(serialize([Recipient::StatusTypes['confirmed']]));
+                  ->default(serialize([Recipient::StatusTypes['confirmed']]));
         });
     }
 

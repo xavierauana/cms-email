@@ -13,7 +13,7 @@ class AddSoftDeleteToEmailList extends Migration
      */
     public function up() {
         Schema::table("email_lists", function (Blueprint $table) {
-            $table->softDeletes();
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
@@ -24,7 +24,7 @@ class AddSoftDeleteToEmailList extends Migration
      */
     public function down() {
         Schema::table("email_lists", function (Blueprint $table) {
-            $table->dropSoftDeletes();
+            $table->dropColumn('deleted_at');
         });
     }
 }

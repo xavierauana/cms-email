@@ -24,9 +24,16 @@ class AddStatusColumnToEmailListRecipientsTable extends Migration
      * @return void
      */
     public function down() {
-        Schema::table('email_list_recipients', function (Blueprint $table) {
-            $table->dropColumn('status');
-            $table->dropColumn('token');
-        });
+        if (Schema::hasColumn('email_list_recipients', 'status')) {
+            Schema::table('email_list_recipients', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
+        if (Schema::hasColumn('email_list_recipients', 'token')) {
+            Schema::table('email_list_recipients', function (Blueprint $table) {
+                $table->dropColumn('token');
+            });
+        }
+
     }
 }
