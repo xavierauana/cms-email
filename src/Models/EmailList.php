@@ -34,7 +34,7 @@ class EmailList extends Model
     }
 
     public function updateRecipientStateWithToken(string $token, string $status
-    ): Recipient {
+    ): ?Recipient {
 
         $data = decrypt($token);
 
@@ -49,7 +49,6 @@ class EmailList extends Model
                         'status' => $status
                     ]);
                 }
-
 
                 return $recipient;
             }
