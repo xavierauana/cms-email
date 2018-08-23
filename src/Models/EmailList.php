@@ -48,9 +48,11 @@ class EmailList extends Model
                     $recipient->update([
                         'status' => $status
                     ]);
+
+                    return $recipient;
                 }
 
-                return $recipient;
+
             }
         }
 

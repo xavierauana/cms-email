@@ -26,7 +26,7 @@ class Recipient extends Model
 
     // Relation
     public function list(): Relation {
-        return $this->belongsTo(EmailList::class);
+        return $this->belongsTo(EmailList::class,'email_list_id');
     }
 
     public function user(): Relation {

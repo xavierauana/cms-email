@@ -123,7 +123,11 @@ class Campaign extends Model implements ContentGroupInterface
 
         Log::info("number of recipients {$this->recipients->count()}");
 
-        Log::info("recipients emails:,", $this->recipients->pluck('email'));
+        Log::info("recipients emails:,",
+            $this->recipients->pluck('email')->toArray());
+
+        Log::info("recipients ids:,",
+            $this->recipients->pluck('id')->toArray());
 
         foreach ($this->recipients as $recipient) {
 
