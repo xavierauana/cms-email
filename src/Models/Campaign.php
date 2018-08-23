@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class Campaign extends Model implements ContentGroupInterface
@@ -119,6 +120,10 @@ class Campaign extends Model implements ContentGroupInterface
 
     // Helper
     public function launch() {
+
+        Log::info("number of recipients {$this->recipients->count()}");
+
+        Log::info("recipients emails:,", $this->recipients->pluck('email'));
 
         foreach ($this->recipients as $recipient) {
 
