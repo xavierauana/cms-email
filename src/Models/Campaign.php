@@ -86,16 +86,9 @@ class Campaign extends Model implements ContentGroupInterface
             $query = Recipient::whereEmailListId($this->email_list_id);
 
             $statues = $this->to_status;
+            
+            $query->whereIn('status', $statues);
 
-            $count = 0;
-            foreach ($statues as $state) {
-                if ($count == 0) {
-                    $query->where('status', $state);
-                } else {
-                    $query->orWhere('status', $state);
-                }
-                $count++;
-            }
 
             return $query->get();
 
