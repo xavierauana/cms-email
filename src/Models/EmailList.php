@@ -5,7 +5,6 @@ namespace Anacreation\CmsEmail\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Log;
 
 class EmailList extends Model
 {
@@ -41,13 +40,16 @@ class EmailList extends Model
 
         if (isset($data['list_id']) and $data['email']) {
             if ((int)$data['list_id'] === $this->id) {
-                $recipient = $this->recipients()
-                                  ->whereEmail($data['email'])
-                                  ->first();
 
-                $recipient->update([
-                    'status' => $status
-                ]);
+
+                if ($recipient = $this->recipients()
+                                      ->whereEmail($data['email'])
+                                      ->first()) {
+                    $recipient->update([
+                        'status' => $status
+                    ]);
+                }
+
 
                 return $recipient;
             }
