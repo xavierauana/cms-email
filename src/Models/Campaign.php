@@ -129,6 +129,8 @@ class Campaign extends Model implements ContentGroupInterface
         Log::info("recipients ids:,",
             $this->recipients->pluck('id')->toArray());
 
+
+        return;
         foreach ($this->recipients as $recipient) {
 
             $htmlContent = view(config('cms_email.template_folder') . "/" . $this->template)
