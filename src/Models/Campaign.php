@@ -80,7 +80,10 @@ class Campaign extends Model implements ContentGroupInterface
     public function getRecipientsAttribute(): Collection {
 
         if ($this->list) {
-            $query = $this->list->recipients();
+
+            Log::info("get from list");
+
+            $query = Recipient::whereEmailListId($this->email_list_id);
 
             $statues = $this->to_status;
 
