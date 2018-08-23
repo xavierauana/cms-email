@@ -286,8 +286,13 @@ class EmailListRecipientsController extends Controller
 
                 $uri = config('cms_email.unsbuscribe_redirect_url', "/");
 
-                return redirect($uri)->with('email_notice',
-                    'You have subscribe from our email list.');
+                $data = [
+                    'email_notice' => 'You have subscribe from our email list.',
+                    'list'         => $list,
+                    'recipient'    => $recipient
+                ];
+
+                return redirect($uri)->with($data);
 
             }
         }
@@ -304,8 +309,13 @@ class EmailListRecipientsController extends Controller
 
                 $uri = config('cms_email.confirmed_redirect_url', "/");
 
-                return redirect($uri)->with('email_notice',
-                    'Thank you for confirm the email');
+                $data = [
+                    'email_notice' => 'Thank you for confirm the email',
+                    'list'         => $list,
+                    'recipient'    => $recipient
+                ];
+
+                return redirect($uri)->with($data);
             }
         }
 
