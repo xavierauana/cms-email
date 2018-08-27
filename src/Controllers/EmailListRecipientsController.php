@@ -74,8 +74,8 @@ class EmailListRecipientsController extends Controller
     public function store(Request $request, EmailList $list) {
 
         $validateData = $this->validate($request, [
-            'name'  => 'required|',
-            'email' => 'required|email',
+            'name'  => 'nullable',
+            'email' => 'required|email|unique:email_list_recipients,email',
         ]);
 
         $data = [

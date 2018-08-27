@@ -81,17 +81,8 @@ class Campaign extends Model implements ContentGroupInterface
 
         if ($this->list) {
 
-            Log::info("get from list");
-            Log::info("list id: {$this->email_list_id}");
-
-            $query = Recipient::whereEmailListId($this->email_list_id);
-
-            $statues = $this->to_status;
-
-            $query->whereIn('status', $statues);
-
-
-            return $query->get();
+            return Recipient::whereEmailListId($this->email_list_id)
+                            ->whereIn('status', $this->to_status)->get();
 
         } elseif ($this->role) {
             return $this->role->users;

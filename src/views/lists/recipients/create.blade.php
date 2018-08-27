@@ -7,7 +7,7 @@
 		
 		{{Form::open(['url'=>route('lists.recipients.store', $list), 'method'=>'POST'])}}
 		
-		    <div class="card-body">
+		<div class="card-body">
 			    <div class="form-group">
 			{{Form::label('name', 'Recipient Name')}}
 				    {{Form::text('name', '', ['class'=>'form-control', 'placeholder'=>'Recipient Name'])}}
@@ -16,16 +16,16 @@
 					<strong>{{ $errors->first('name') }}</strong>
 				</span>
 				    @endif
-		
-		
-		<div class="form-group">
+				
+				
+				    <div class="form-group">
 			{{Form::label('email', 'Email')}}
-			{{Form::email('email', '', ['class'=>'form-control', 'placeholder'=>'Recipient Email'])}}
-			@if ($errors->has('email'))
-				<span class="help-block">
+					    {{Form::email('email', '', ['class'=>'form-control', 'placeholder'=>'Recipient Email'])}}
+					    @if ($errors->has('email'))
+						    <span class="help-block">
 					<strong>{{ $errors->first('email') }}</strong>
 				</span>
-			@endif
+					    @endif
 		</div>
 		
 		    </div>
@@ -33,7 +33,8 @@
 		
 		<div class="form-group">
 			{{Form::submit('Add', ['class'=>'btn btn-success'])}}
-			<a href='{{route('menus.index')}}' class="btn btn-info">Back</a>
+			<a href='{{route('lists.recipients.index', $list)}}'
+			   class="btn btn-info">Back</a>
 		</div>
 		
 		
