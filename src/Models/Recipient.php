@@ -5,6 +5,7 @@ namespace Anacreation\CmsEmail\Models;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Validation\Rule;
 
 class Recipient extends Model
 {
@@ -26,7 +27,7 @@ class Recipient extends Model
 
     // Relation
     public function list(): Relation {
-        return $this->belongsTo(EmailList::class,'email_list_id');
+        return $this->belongsTo(EmailList::class, 'email_list_id');
     }
 
     public function user(): Relation {
@@ -42,4 +43,21 @@ class Recipient extends Model
         ];
         $this->attributes['token'] = encrypt($data);
     }
+
+    // helper
+
+    public static function getStoreValidationRules(int $list_id): array {
+        return [
+            'name'  => 'nullable',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('email_list_recipients')->where(function ($query
+                ) use ($list_id) {
+                    return $query->where('email_list_id', $list_id);
+                })
+            ],
+        ];
+    }
+
 }

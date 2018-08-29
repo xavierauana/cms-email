@@ -73,10 +73,8 @@ class EmailListRecipientsController extends Controller
      */
     public function store(Request $request, EmailList $list) {
 
-        $validateData = $this->validate($request, [
-            'name'  => 'nullable',
-            'email' => 'required|email|unique:email_list_recipients,email',
-        ]);
+        $validateData = $this->validate($request,
+            Recipient::getStoreValidationRules($list->id));
 
         $data = [
             'name'    => $validateData['name'],
@@ -129,33 +127,7 @@ class EmailListRecipientsController extends Controller
      * @throws AuthorizationException
      */
     public function update(Request $request, Language $language) {
-        $this->authorize('update', $language);
-
-        $validateData = $this->validate($request, [
-            'label'                => 'required',
-            'code'                 => [
-                'required',
-                Rule::unique('languages')->ignore($language->id, 'id')
-            ],
-            'is_active'            => 'required|boolean',
-            'is_default'           => 'required|boolean',
-            'fallback_language_id' => 'required|in:0,' . implode(',',
-                    Language::pluck('id')->toArray()),
-        ]);
-
-
-        if ($validateData['is_default'] == "1") {
-            Language::where('id', '<>', $language->id)->get()->each(function (
-                Language $language
-            ) {
-                $language->is_default = false;
-                $language->save();
-            });
-        }
-
-        $language->update($validateData);
-
-        return redirect()->route('languages.index');
+        
     }
 
     /**
