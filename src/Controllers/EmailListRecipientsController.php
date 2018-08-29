@@ -127,7 +127,7 @@ class EmailListRecipientsController extends Controller
      * @throws AuthorizationException
      */
     public function update(Request $request, Language $language) {
-        
+
     }
 
     /**

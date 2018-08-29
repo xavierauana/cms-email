@@ -139,8 +139,12 @@ class Campaign extends Model implements ContentGroupInterface
                           ->subject($this->subject)
                           ->htmlContent($htmlContent);
 
+            Log::info("Going to dispatch job for {$recipient->email} and campaign id: {$this->id}");
+
+            $queue = config("cms_email.send_email_queue", "default");
+
             SendEmail::dispatch($emailProvider, $this, $recipient)
-                     ->onQueue(config("cms_email.send_email_queue", "default"));
+                     ->onQueue($queue);
         }
 
         $this->has_sent = true;
@@ -193,12 +197,8 @@ class Campaign extends Model implements ContentGroupInterface
         if ($recipient === null) {
             return "";
         }
-        $data = [
-            'list_id' => $this->email_list_id ?? 0,
-            'email'   => $recipient->email
-        ];
 
-        $token = encrypt($data);
+        $token = $this->createToken($recipient);
 
         return route('lists.unsubscribe',
             [$this->email_list_id, 'token' => $token]);
@@ -209,6 +209,28 @@ class Campaign extends Model implements ContentGroupInterface
         if ($recipient === null) {
             return "";
         }
+        $token = $this->createToken($recipient);
+
+        return route('lists.confirm',
+            [$this->email_list_id, 'token' => $token]);
+    }
+
+    public function getCampaignWebLink(Recipient $recipient = null): string {
+        if ($recipient) {
+
+            $token = $this->createToken($recipient);
+
+            return route('campaign.web', [$this, 'token' => $token]);
+        }
+
+        return route('campaign.web', $this);
+    }
+
+    /**
+     * @param \Anacreation\CmsEmail\Models\Recipient $recipient
+     * @return string
+     */
+    private function createToken(Recipient $recipient): string {
         $data = [
             'list_id' => $this->email_list_id ?? 0,
             'email'   => $recipient->email
@@ -216,12 +238,7 @@ class Campaign extends Model implements ContentGroupInterface
 
         $token = encrypt($data);
 
-        return route('lists.confirm',
-            [$this->email_list_id, 'token' => $token]);
-    }
-
-    public function getCampaignWebLink(): string {
-        return route('campaign.web', $this);
+        return $token;
     }
 
 }

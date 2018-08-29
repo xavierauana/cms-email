@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendEmail implements ShouldQueue
 {
@@ -41,14 +42,7 @@ class SendEmail implements ShouldQueue
      */
     public function handle() {
 
-
-
-
-
-
-
-
-
+        Log::info("Job handle email for campaign id: {$this->campaign->id}");
 
         $this->emailSender->send(['campaign_id' => $this->campaign->id]);
     }

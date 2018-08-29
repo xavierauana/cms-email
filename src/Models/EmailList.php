@@ -38,6 +38,7 @@ class EmailList extends Model
 
         $data = decrypt($token);
 
+
         if (isset($data['list_id']) and $data['email']) {
             if ((int)$data['list_id'] === $this->id) {
 

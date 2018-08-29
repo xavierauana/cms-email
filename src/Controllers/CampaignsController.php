@@ -3,6 +3,7 @@
 namespace Anacreation\CmsEmail\Controllers;
 
 use Anacreation\CmsEmail\Models\Campaign;
+use Anacreation\CmsEmail\Models\EmailList;
 use Anacreation\CmsEmail\Models\Recipient;
 use Anacreation\CmsEmail\Services\CampaignService;
 use App\Http\Controllers\Controller;
@@ -65,14 +66,29 @@ class CampaignsController extends Controller
      * Display the specified resource.
      *
      * @param \Anacreation\CmsEmail\Models\Campaign $campaign
+     * @param \Illuminate\Http\Request              $request
      * @return Response
      */
-    public function show(Campaign $campaign) {
+    public function show(Campaign $campaign, Request $request) {
+
+        $recipient = null;
+
+        if ($token = $request->query('token')) {
+
+            $data = decrypt($token);
+
+            if (isset($data['list_id']) and isset($data['email'])) {
+                if ($list = EmailList::find($data['list_id'])) {
+                    $recipient = $list->recipients()->whereEmail($data['email'])
+                                      ->first();
+                }
+            }
+        }
 
         $data = [
             'name'      => "",
             'campaign'  => $campaign,
-            'recipient' => null,
+            'recipient' => $recipient,
             'user'      => null,
         ];
 
