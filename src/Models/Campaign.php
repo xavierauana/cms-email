@@ -216,6 +216,7 @@ class Campaign extends Model implements ContentGroupInterface
     }
 
     public function getCampaignWebLink(Recipient $recipient = null): string {
+
         if ($recipient) {
 
             $token = $this->createToken($recipient);

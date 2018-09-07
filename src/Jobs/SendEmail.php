@@ -3,6 +3,7 @@
 namespace Anacreation\CmsEmail\Jobs;
 
 use Anacreation\CmsEmail\Models\Campaign;
+use Anacreation\CmsEmail\Models\Recipient;
 use Anacreation\Notification\Provider\Contracts\EmailSender;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,22 +18,30 @@ class SendEmail implements ShouldQueue
     /**
      * @var \Anacreation\Notification\Provider\Contracts\EmailSender
      */
-    private $emailSender;
+    public $emailSender;
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
      */
-    private $campaign;
+    public $campaign;
+    /**
+     * @var \Anacreation\CmsEmail\Models\Recipient
+     */
+    public $recipient;
 
     /**
      * Create a new job instance.
      *
      * @param \Anacreation\Notification\Provider\Contracts\EmailSender $emailSender
      * @param \Anacreation\CmsEmail\Models\Campaign                    $campaign
+     * @param \Anacreation\CmsEmail\Models\Recipient                   $recipient
      */
-    public function __construct(EmailSender $emailSender, Campaign $campaign) {
+    public function __construct(
+        EmailSender $emailSender, Campaign $campaign, Recipient $recipient
+    ) {
         //
         $this->emailSender = $emailSender;
         $this->campaign = $campaign;
+        $this->recipient = $recipient;
     }
 
     /**
@@ -43,6 +52,7 @@ class SendEmail implements ShouldQueue
     public function handle() {
 
         Log::info("Job handle email for campaign id: {$this->campaign->id}");
+        Log::info("Recipient id {$this->recipient->id}, email: {$this->recipient->email}");
 
         $this->emailSender->send(['campaign_id' => $this->campaign->id]);
     }
