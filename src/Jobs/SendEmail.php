@@ -80,7 +80,7 @@ class SendEmail implements ShouldQueue
     /**
      * @return mixed
      */
-    private function getEmailProvider(): mixed {
+    private function getEmailProvider(): EmailSender {
         $emailProvider = app()->makeWith(EmailSender::class,
             [
                 'username' => config("cms_email.username"),
