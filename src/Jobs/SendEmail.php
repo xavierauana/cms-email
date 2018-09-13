@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Log;
 class SendEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    /**
-     * @var \Anacreation\Notification\Provider\Contracts\EmailSender
-     */
-    public $emailSender;
+
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
      */
@@ -35,11 +32,9 @@ class SendEmail implements ShouldQueue
      * @param \Anacreation\CmsEmail\Models\Campaign                    $campaign
      * @param \Anacreation\CmsEmail\Models\Recipient                   $recipient
      */
-    public function __construct(
-        EmailSender $emailSender, Campaign $campaign, Recipient $recipient
+    public function __construct(Campaign $campaign, Recipient $recipient
     ) {
         //
-        $this->emailSender = $emailSender;
         $this->campaign = $campaign;
         $this->recipient = $recipient;
     }
@@ -51,9 +46,47 @@ class SendEmail implements ShouldQueue
      */
     public function handle() {
 
-        Log::info("Job handle email for campaign id: {$this->campaign->id}");
-        Log::info("Recipient id {$this->recipient->id}, email: {$this->recipient->email}");
+        Log::info("Job handle email for campaign id: {$this->campaign->id}, recipient id {$this->recipient->id}, email: {$this->recipient->email}");
 
-        $this->emailSender->send(['campaign_id' => $this->campaign->id]);
+        $htmlContent = $this->constructEmailContent();
+
+        $emailProvider = $this->getEmailProvider();
+
+        $emailProvider->from($this->campaign->from_name,
+            $this->campaign->from_address)
+                      ->to($this->recipient->name, $this->recipient->email)
+                      ->subject($this->campaign->subject)
+                      ->htmlContent($htmlContent)
+                      ->send(['campaign_id' => $this->campaign->id]);
+
+    }
+
+    /**
+     * @return string
+     * @throws \Throwable
+     */
+    private function constructEmailContent(): string {
+        $htmlContent = view(config('cms_email.template_folder') . "/" . $this->campaign->template)
+            ->with([
+                'name'      => $this->recipient->name,
+                'campaign'  => $this->campaign,
+                'recipient' => $this->recipient,
+                'user'      => $this->recipient->user,
+            ])->render();
+
+        return $htmlContent;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getEmailProvider(): mixed {
+        $emailProvider = app()->makeWith(EmailSender::class,
+            [
+                'username' => config("cms_email.username"),
+                'password' => config("cms_email.password"),
+            ]);
+
+        return $emailProvider;
     }
 }

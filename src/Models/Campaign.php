@@ -6,7 +6,6 @@ use Anacreation\Cms\Contracts\ContentGroupInterface;
 use Anacreation\Cms\Models\Role;
 use Anacreation\Cms\traits\ContentGroup;
 use Anacreation\CmsEmail\Jobs\SendEmail;
-use Anacreation\Notification\Provider\Contracts\EmailSender;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -111,43 +110,18 @@ class Campaign extends Model implements ContentGroupInterface
 
         Log::info("number of recipients {$this->recipients->count()}");
 
-        Log::info("recipients emails:,",
-            $this->recipients->pluck('email')->toArray());
-
-        Log::info("recipients ids:,",
-            $this->recipients->pluck('id')->toArray());
-
         foreach ($this->recipients as $recipient) {
-
-            $htmlContent = view(config('cms_email.template_folder') . "/" . $this->template)
-                ->with([
-                    'name'      => $recipient->name,
-                    'campaign'  => $this,
-                    'recipient' => $recipient,
-                    'user'      => $recipient->user,
-                ])->render();
-
-            $emailProvider = app()->makeWith(EmailSender::class,
-                [
-                    'username' => config("cms_email.username"),
-                    'password' => config("cms_email.password"),
-                ]);
-
-
-            $emailProvider->from($this->from_name, $this->from_address)
-                          ->to($recipient->name, $recipient->email)
-                          ->subject($this->subject)
-                          ->htmlContent($htmlContent);
-
-            Log::info("Going to dispatch job for {$recipient->email} and campaign id: {$this->id}");
 
             $queue = config("cms_email.send_email_queue", "default");
 
-            SendEmail::dispatch($emailProvider, $this, $recipient)
+            Log::info("Dispatch job for {$recipient->email} and campaign id: {$this->id}");
+
+            SendEmail::dispatch($this, $recipient)
                      ->onQueue($queue);
         }
 
         $this->has_sent = true;
+
         $this->save();
     }
 
