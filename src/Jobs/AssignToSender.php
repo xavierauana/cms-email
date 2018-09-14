@@ -41,7 +41,7 @@ class AssignToSender implements ShouldQueue
 
         $this->campaign->list
             ->recipients()
-            ->whereIn('status', '')
+            ->whereIn('status', $this->campaign->to_status)
             ->chunk(1000, function (Collection $recipients) {
                 $recipients->each(function (
                     Recipient $recipient
@@ -56,34 +56,5 @@ class AssignToSender implements ShouldQueue
                     dispatch($job)->onQueue($queue);
                 });
             });
-    }
-
-    /**
-     * @return string
-     * @throws \Throwable
-     */
-    private function constructEmailContent(): string {
-        $htmlContent = view(config('cms_email.template_folder') . "/" . $this->campaign->template)
-            ->with([
-                'name'      => $this->recipient->name,
-                'campaign'  => $this->campaign,
-                'recipient' => $this->recipient,
-                'user'      => $this->recipient->user,
-            ])->render();
-
-        return $htmlContent;
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getEmailProvider(): EmailSender {
-        $emailProvider = app()->makeWith(EmailSender::class,
-            [
-                'username' => config("cms_email.username"),
-                'password' => config("cms_email.password"),
-            ]);
-
-        return $emailProvider;
     }
 }
