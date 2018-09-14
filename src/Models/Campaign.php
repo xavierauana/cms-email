@@ -5,7 +5,7 @@ namespace Anacreation\CmsEmail\Models;
 use Anacreation\Cms\Contracts\ContentGroupInterface;
 use Anacreation\Cms\Models\Role;
 use Anacreation\Cms\traits\ContentGroup;
-use Anacreation\CmsEmail\Jobs\SendEmail;
+use Anacreation\CmsEmail\Jobs\AssignToSender;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -110,15 +110,9 @@ class Campaign extends Model implements ContentGroupInterface
 
         Log::info("number of recipients {$this->recipients->count()}");
 
-        foreach ($this->recipients as $recipient) {
+        $job = new AssignToSender($this);
 
-            $queue = config("cms_email.send_email_queue", "default");
-
-            Log::info("Dispatch job for {$recipient->email} and campaign id: {$this->id}");
-
-            SendEmail::dispatch($this, $recipient)
-                     ->onQueue($queue);
-        }
+        dispatch($job);
 
         $this->has_sent = true;
 
