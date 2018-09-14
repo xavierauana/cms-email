@@ -2,7 +2,7 @@
 
 @section("content")
 	@component('cms_email::components.nav_container')
-		@slot('title')Edit Campaign: {{$list->title}} @endslot
+		@slot('title')Edit List: {{$list->title}} @endslot
 		
 		{{Form::model($list, ['url'=>route('lists.update', $list), 'method'=>'PUT'])}}
 		
