@@ -5,7 +5,7 @@ namespace Anacreation\CmsEmail\Models;
 use Anacreation\Cms\Contracts\ContentGroupInterface;
 use Anacreation\Cms\Models\Role;
 use Anacreation\Cms\traits\ContentGroup;
-use Anacreation\CmsEmail\Jobs\AssignToSender;
+use Anacreation\CmsEmail\Jobs\PrepareJobs;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -110,7 +110,7 @@ class Campaign extends Model implements ContentGroupInterface
 
         Log::info("number of recipients {$this->recipients->count()}");
 
-        $job = new AssignToSender($this);
+        $job = new PrepareJobs($this);
 
         dispatch($job);
 
@@ -194,6 +194,7 @@ class Campaign extends Model implements ContentGroupInterface
 
         return route('campaign.web', $this);
     }
+
 
     /**
      * @param \Anacreation\CmsEmail\Models\Recipient $recipient

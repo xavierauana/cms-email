@@ -2,7 +2,9 @@
 
 namespace Anacreation\CmsEmail\Controllers;
 
+use Anacreation\CmsEmail\Jobs\SendEmail;
 use Anacreation\CmsEmail\Models\Campaign;
+use Anacreation\CmsEmail\Models\CampaignStatus;
 use Anacreation\CmsEmail\Models\EmailList;
 use Anacreation\CmsEmail\Models\Recipient;
 use Anacreation\CmsEmail\Services\CampaignService;
@@ -156,5 +158,169 @@ class CampaignsController extends Controller
         $campaign->launch();
 
         return redirect()->back()->withStatus("{$campaign->title} is sending!");
+    }
+
+    public function activities(Campaign $campaign, Request $request) {
+
+        if ($request->ajax()) {
+            list($totalRecipients, $numberToProvider, $numberNotSend, $delivered, $bounced, $dropped) = $this->getNumbers($campaign);
+
+            return response()->json([
+                "totalRecipients" => $totalRecipients,
+                "totalToProvider" => $numberToProvider,
+                "notSent"         => $numberNotSend,
+                "totalDelivered"  => $delivered,
+                "totalBounce"     => $bounced,
+                "totalDropped"    => $dropped,
+            ]);
+        }
+
+
+        return view('cms_email::campaigns.activities',
+            compact('campaign'));
+    }
+
+    public function details(Campaign $campaign, string $status) {
+        $recipientStatuses = null;
+        if ($status === CampaignStatus::Status['to_provider']) {
+            $recipientStatuses = CampaignStatus::whereNotIn('status', ['none'])
+                                               ->with('recipient')
+                                               ->paginate(100);
+        } else {
+            if (in_array($status, array_keys(CampaignStatus::Status))) {
+                $recipientStatuses = CampaignStatus::whereStatus($status)
+                                                   ->with('recipient')
+                                                   ->paginate(100);
+            } else {
+                throw new \InvalidArgumentException("Campaign status not recognised!");
+            }
+        }
+
+        return view('cms_email::campaigns.details',
+            compact('campaign', 'recipientStatuses', 'status'));
+    }
+
+    /**
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
+     * @return array
+     */
+    private function getNumbers(Campaign $campaign): array {
+
+        // Total campaign recipients
+        $totalRecipients = $campaign->list->recipients()
+                                          ->whereIn('status',
+                                              $campaign->to_status)->count();
+
+
+        // Successfully send to provider
+        $numberToProvider = CampaignStatus::select([
+            'campaign_id',
+            'recipient_id',
+            'status'
+        ])->distinct()->whereNotIn("status", ['none'])->count();
+
+
+        // Try to send to provider but fails or not even try to sent
+        $numberNotSend = $totalRecipients;
+        if ($campaign->has_sent) {
+            $numberNotSend1 = $campaign->list->recipients()
+                                             ->whereIn('id',
+                                                 function ($subQuery) use (
+                                                     $campaign
+                                                 ) {
+                                                     $subQuery->select(['recipient_id'])
+                                                              ->from('campaign_status')
+                                                              ->where([
+                                                                  [
+                                                                      'campaign_id',
+                                                                      "=",
+                                                                      $campaign->id
+                                                                  ],
+                                                                  [
+                                                                      'status',
+                                                                      "=",
+                                                                      CampaignStatus::Status['none']
+                                                                  ],
+                                                              ]);
+                                                 })->count();
+
+
+            $numberNotSend3 = CampaignStatus::select([
+                'id',
+                'campaign_id',
+                'recipient_id'
+            ])
+                                            ->whereCampaignId($campaign->id)
+                                            ->get()->groupBy('recipient_id')->count();
+            $numberNotSend2 = $campaign->list->recipients()
+                                             ->whereNotIn('id',
+                                                 function ($subQuery) use (
+                                                     $campaign
+                                                 ) {
+                                                     $subQuery->select('recipient_id')
+                                                              ->from('campaign_status')
+                                                              ->where('campaign_id',
+                                                                  $campaign->id);
+                                                 })
+                                             ->count();
+//            dd($numberNotSend1, $numberNotSend2, $numberNotSend3);
+
+            $numberNotSend = $numberNotSend1 + $numberNotSend2;
+        }
+
+        // Successfully deliver to recipient mailbox (form webhook)
+        $delivered = CampaignStatus::select([
+            'campaign_id',
+            'recipient_id',
+            'status'
+        ])->groupBY([
+            'campaign_id',
+            'recipient_id',
+            'status'
+        ])->whereStatus('delivered')->count();
+
+        // Try to deliver but bounce from recipient mailbox (form webhook)
+        $bounced = CampaignStatus::select([
+            'campaign_id',
+            'recipient_id',
+            'status'
+        ])->distinct()->whereStatus(CampaignStatus::Status['bounce'])->count();
+
+        // Provider not deliver (form webhook)
+        $dropped = CampaignStatus::select([
+            'campaign_id',
+            'recipient_id',
+            'status'
+        ])->distinct()->whereStatus(CampaignStatus::Status['dropped'])->count();
+
+        return array(
+            $totalRecipients,
+            $numberToProvider,
+            $numberNotSend,
+            $delivered,
+            $bounced,
+            $dropped
+        );
+    }
+
+    public function resendAll(Campaign $campaign) {
+
+        $recipients = $campaign->list->recipients()
+                                     ->whereIn('id', function ($query) {
+                                         $query->select('recipient_id')
+                                               ->from("campaign_status")
+                                               ->whereStatus(CampaignStatus::Status['none']);
+                                     })->get();
+
+        $recipients->each(function (Recipient $recipient) use ($campaign) {
+
+            $job = new SendEmail($campaign, $recipient);
+
+            dispatch($job);
+        });
+
+        return redirect()->back()
+                         ->withStatus("Resent to {$recipients->count()} unsent recipients!");
+
     }
 }

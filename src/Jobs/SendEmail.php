@@ -3,6 +3,7 @@
 namespace Anacreation\CmsEmail\Jobs;
 
 use Anacreation\CmsEmail\Models\Campaign;
+use Anacreation\CmsEmail\Models\CampaignStatus;
 use Anacreation\CmsEmail\Models\Recipient;
 use Anacreation\Notification\Provider\Contracts\EmailSender;
 use Illuminate\Bus\Queueable;
@@ -24,19 +25,25 @@ class SendEmail implements ShouldQueue
      * @var \Anacreation\CmsEmail\Models\Recipient
      */
     public $recipient;
+    /**
+     * @var bool
+     */
+    private $skip;
 
     /**
      * Create a new job instance.
      *
-     * @param \Anacreation\Notification\Provider\Contracts\EmailSender $emailSender
-     * @param \Anacreation\CmsEmail\Models\Campaign                    $campaign
-     * @param \Anacreation\CmsEmail\Models\Recipient                   $recipient
+     * @param \Anacreation\CmsEmail\Models\Campaign  $campaign
+     * @param \Anacreation\CmsEmail\Models\Recipient $recipient
+     * @param bool                                   $skip
      */
-    public function __construct(Campaign $campaign, Recipient $recipient
+    public function __construct(
+        Campaign $campaign, Recipient $recipient, bool $skip = true
     ) {
         //
         $this->campaign = $campaign;
         $this->recipient = $recipient;
+        $this->skip = $skip;
     }
 
     /**
@@ -48,16 +55,46 @@ class SendEmail implements ShouldQueue
 
         Log::info("Job handle email for campaign id: {$this->campaign->id}, recipient id {$this->recipient->id}, email: {$this->recipient->email}");
 
+        $status = $this->getCampaignStatus();
+
+        if ($this->needToTerminate($status)) {
+            return;
+        }
+
         $htmlContent = $this->constructEmailContent();
 
         $emailProvider = $this->getEmailProvider();
 
-        $emailProvider->from($this->campaign->from_name,
-            $this->campaign->from_address)
-                      ->to($this->recipient->name, $this->recipient->email)
-                      ->subject($this->campaign->subject)
-                      ->htmlContent($htmlContent)
-                      ->send(['campaign_id' => $this->campaign->id]);
+        $mail = $emailProvider
+            ->from($this->campaign->from_name, $this->campaign->from_address)
+            ->to($this->recipient->name ?? "", $this->recipient->email)
+            ->subject($this->campaign->subject)
+            ->htmlContent($htmlContent);
+
+        if (config("cms_email.sand_box")) {
+            $this->randomFail();
+            $mail = $mail->enableSendBox();
+        }
+
+        $response = $mail->send([
+            'campaign_id'  => $this->campaign->id,
+            'recipient_id' => $this->recipient->id,
+        ]);
+
+        if ($response->isOkay()) {
+
+            $this->updateCampaignStatus($status);
+
+            Log::info("SendEmailJob: Send to provider successfully. campaign id: {$this->campaign->id} , recipient id: $this->recipient->id");
+
+        } else {
+
+            Log::error("SendEmailJob: Post to api error, campaign id: {$this->campaign->id} , recipient id:{$this->recipient->id}",
+                (array)$response->getResponse());
+
+            throw new \Exception("SendEmailJob: Post to api error, campaign id: {$this->campaign->id} , recipient id: {$this->recipient->id}");
+
+        }
 
     }
 
@@ -88,5 +125,49 @@ class SendEmail implements ShouldQueue
             ]);
 
         return $emailProvider;
+    }
+
+    private function randomFail() {
+        $int = rand(1, 5);
+
+        if ($int === 1) {
+            throw new \Exception("ramdom fails");
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getCampaignStatus() {
+        $status = CampaignStatus::where([
+            ['campaign_id', "=", $this->campaign->id],
+            ['recipient_id', "=", $this->recipient->id],
+        ])->first();
+
+        if ($status === null) {
+            $status = CampaignStatus::create([
+                'campaign_id'  => $this->campaign->id,
+                'recipient_id' => $this->recipient->id,
+                'status'       => CampaignStatus::Status['none']
+            ]);
+        }
+
+        return $status;
+    }
+
+    private function needToTerminate(CampaignStatus $status) {
+
+        return $status->status !== CampaignStatus::Status['none'] and $this->skip;
+    }
+
+    /**
+     * @param $status
+     */
+    private function updateCampaignStatus($status): void {
+        $status->update([
+            'campaign_id'  => $this->campaign->id,
+            'recipient_id' => $this->recipient->id,
+            'status'       => CampaignStatus::Status['to_provider']
+        ]);
     }
 }

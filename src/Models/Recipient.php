@@ -34,6 +34,14 @@ class Recipient extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function campaignStatus(): Relation {
+        return $this->hasMany(CampaignStatus::class);
+    }
+
+    public function activities(): Relation {
+        return $this->hasMany(EmailActivity::class);
+    }
+
     // Mutator
 
     public function setTokenAttribute() {

@@ -13,6 +13,7 @@ use Anacreation\CmsEmail\Controllers\CampaignRecipientsController;
 use Anacreation\CmsEmail\Controllers\CampaignsController;
 use Anacreation\CmsEmail\Controllers\EmailListRecipientsController;
 use Anacreation\CmsEmail\Controllers\EmailListsController;
+use Anacreation\CmsEmail\Controllers\WebhooksController;
 use Illuminate\Support\Facades\Route;
 
 class CmsEmail
@@ -26,6 +27,9 @@ class CmsEmail
             ]
         ],
             function () {
+                Route::post('email/webhook',
+                    WebhooksController::class . "@parse")
+                     ->name('email.webhook');
 
                 Route::post('email/lists/{list}/registration',
                     CampaignsController::class . "@registration")
@@ -49,6 +53,15 @@ class CmsEmail
                         ],
                             function () {
 
+                                Route::get('campaigns/{campaign}/activities',
+                                    CampaignsController::class . "@activities")
+                                     ->name('campaigns.activities');
+                                Route::get('campaigns/{campaign}/activities/details/{status}',
+                                    CampaignsController::class . "@details")
+                                     ->name('campaigns.activities.details');
+                                Route::post('campaigns/{campaign}/details/resend_failed',
+                                    CampaignsController::class . "@resendAll")
+                                     ->name('campaigns.resend.all');
                                 Route::post('campaigns/{campaign}/send',
                                     CampaignsController::class . "@send");
                                 Route::post('campaigns/{campaign}/contents/update',

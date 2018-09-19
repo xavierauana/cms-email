@@ -3,7 +3,6 @@
 namespace Anacreation\CmsEmail\Jobs;
 
 use Anacreation\CmsEmail\Models\Campaign;
-use Anacreation\CmsEmail\Models\Recipient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class AssignToSender implements ShouldQueue
+class PrepareJobs implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -20,21 +19,15 @@ class AssignToSender implements ShouldQueue
      * @var \Anacreation\CmsEmail\Models\Campaign
      */
     protected $campaign;
-    /**
-     * @var \Illuminate\Support\Collection
-     */
-    protected $recipients;
 
     /**
      * Create a new job instance.
      *
      * @param \Anacreation\CmsEmail\Models\Campaign $campaign
-     * @param \Illuminate\Support\Collection        $recipients
      */
-    public function __construct(Campaign $campaign, Collection $recipients) {
+    public function __construct(Campaign $campaign) {
         //
         $this->campaign = $campaign;
-        $this->recipients = $recipients;
     }
 
     /**
@@ -44,15 +37,33 @@ class AssignToSender implements ShouldQueue
      */
     public function handle() {
 
-        $this->recipients->each(function (Recipient $recipient) {
+        $count = 0;
 
-            Log::info("Dispatch job for {$recipient->email} and campaign id: {$this->campaign->id}");
+        $query = $this->campaign
+            ->list
+            ->recipients()
+            ->whereIn('status', $this->campaign->to_status);
 
-            $job = new SendEmail($this->campaign, $recipient);
+        $total = $query->count();
 
-            $queue = config("cms_email.send_email_queue", "default");
+        $numberOfJobs = 99;
 
-            dispatch($job)->onQueue($queue);
-        });
+        // show balance between timeout and memory
+        $itemPerPage = ceil(100005 / $numberOfJobs);
+
+        $query->chunk($itemPerPage,
+            function (Collection $recipients) use (&$count) {
+
+                $job = (new AssignToSender($this->campaign,
+                    $recipients))->delay(1);
+
+                dispatch($job);
+
+                Log::info("PrepareJobs: batch {$count}");
+
+                $count++;
+
+            });
+
     }
 }

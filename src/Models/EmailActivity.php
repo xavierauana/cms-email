@@ -2,53 +2,34 @@
 
 namespace Anacreation\CmsEmail\Models;
 
-use Anacreation\Cms\Contracts\ContentGroupInterface;
-use Anacreation\Cms\traits\ContentGroup;
-use Anacreation\CmsEmail\Mail\SimpleMail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Mail;
 
-class EmailActivity extends Model implements ContentGroupInterface
+class EmailActivity extends Model
 {
-
-    use ContentGroup;
-
-    protected $table = 'email_activities';
-
-    protected $fillable = [
-        'title',
-        'confirm_opt_in',
-        'has_welcome_message',
-        'has_goodbye_message'
+    const Activities = [
+        'open'       => 'open',
+        'click'      => 'click',
+        'spamreport' => 'spamreport',
     ];
 
-    protected $casts = [
-        'confirm_opt_in'      => 'Boolean',
-        'has_welcome_message' => 'Boolean',
-        'has_goodbye_message' => 'Boolean'
+    protected $fillable = [
+        'ip',
+        'url',
+        'activity',
+        'timestamp',
+        'user_agent',
+        'message_id',
+        'campaign_id',
+        'recipient_id',
     ];
 
     // Relation
-    public function recipients(): Relation {
-        return $this->hasMany(Recipient::class);
+    public function campaign(): Relation {
+        return $this->belongsTo(Campaign::class);
     }
 
-    public function getContentCacheKey(
-        string $langCode, string $contentIdentifier
-    ): string {
-        return "email_campaign_" . $this->id;
+    public function recipient(): Relation {
+        return $this->belongsTo(Recipient::class);
     }
-
-    public function launch() {
-        $recipients = $this->recipients;
-
-        foreach ($recipients as $recipient) {
-            Mail::send(new SimpleMail($this, $recipient));
-        }
-
-        $this->has_sent = true;
-        $this->save();
-    }
-
 }
