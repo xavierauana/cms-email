@@ -217,7 +217,11 @@ class CampaignsController extends Controller
             'campaign_id',
             'recipient_id',
             'status'
-        ])->distinct()->whereNotIn("status", ['none'])->count();
+        ])
+                                          ->whereCampaignId($campaign->id)
+                                          ->distinct()
+                                          ->whereNotIn("status", ['none'])
+                                          ->count();
 
 
         // Try to send to provider but fails or not even try to sent
@@ -251,7 +255,8 @@ class CampaignsController extends Controller
                 'recipient_id'
             ])
                                             ->whereCampaignId($campaign->id)
-                                            ->get()->groupBy('recipient_id')->count();
+                                            ->get()->groupBy('recipient_id')
+                                            ->count();
             $numberNotSend2 = $campaign->list->recipients()
                                              ->whereNotIn('id',
                                                  function ($subQuery) use (
@@ -263,7 +268,7 @@ class CampaignsController extends Controller
                                                                   $campaign->id);
                                                  })
                                              ->count();
-//            dd($numberNotSend1, $numberNotSend2, $numberNotSend3);
+            //            dd($numberNotSend1, $numberNotSend2, $numberNotSend3);
 
             $numberNotSend = $numberNotSend1 + $numberNotSend2;
         }
@@ -273,25 +278,36 @@ class CampaignsController extends Controller
             'campaign_id',
             'recipient_id',
             'status'
-        ])->groupBY([
-            'campaign_id',
-            'recipient_id',
-            'status'
-        ])->whereStatus('delivered')->count();
+        ])
+                                   ->groupBY([
+                                       'campaign_id',
+                                       'recipient_id',
+                                       'status'
+                                   ])
+                                   ->whereCampaignId($campaign->id)
+                                   ->whereStatus('delivered')->count();
 
         // Try to deliver but bounce from recipient mailbox (form webhook)
         $bounced = CampaignStatus::select([
             'campaign_id',
             'recipient_id',
             'status'
-        ])->distinct()->whereStatus(CampaignStatus::Status['bounce'])->count();
+        ])
+                                 ->distinct()
+                                 ->whereCampaignId($campaign->id)
+                                 ->whereStatus(CampaignStatus::Status['bounce'])
+                                 ->count();
 
         // Provider not deliver (form webhook)
         $dropped = CampaignStatus::select([
             'campaign_id',
             'recipient_id',
             'status'
-        ])->distinct()->whereStatus(CampaignStatus::Status['dropped'])->count();
+        ])
+                                 ->distinct()
+                                 ->whereCampaignId($campaign->id)
+                                 ->whereStatus(CampaignStatus::Status['dropped'])
+                                 ->count();
 
         return array(
             $totalRecipients,
