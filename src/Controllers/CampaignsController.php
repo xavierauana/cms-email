@@ -279,13 +279,14 @@ class CampaignsController extends Controller
             'recipient_id',
             'status'
         ])
+                                   ->whereCampaignId($campaign->id)
+                                   ->whereStatus(CampaignStatus::Status['delivered'])
                                    ->groupBY([
                                        'campaign_id',
                                        'recipient_id',
                                        'status'
                                    ])
-                                   ->whereCampaignId($campaign->id)
-                                   ->whereStatus('delivered')->count();
+                                   ->count();
 
         // Try to deliver but bounce from recipient mailbox (form webhook)
         $bounced = CampaignStatus::select([
@@ -293,9 +294,9 @@ class CampaignsController extends Controller
             'recipient_id',
             'status'
         ])
-                                 ->distinct()
                                  ->whereCampaignId($campaign->id)
                                  ->whereStatus(CampaignStatus::Status['bounce'])
+                                 ->distinct()
                                  ->count();
 
         // Provider not deliver (form webhook)
@@ -304,9 +305,9 @@ class CampaignsController extends Controller
             'recipient_id',
             'status'
         ])
-                                 ->distinct()
                                  ->whereCampaignId($campaign->id)
                                  ->whereStatus(CampaignStatus::Status['dropped'])
+                                 ->distinct()
                                  ->count();
 
         return array(
