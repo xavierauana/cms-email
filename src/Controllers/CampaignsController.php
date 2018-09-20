@@ -209,7 +209,8 @@ class CampaignsController extends Controller
         // Total campaign recipients
         $totalRecipients = $campaign->list->recipients()
                                           ->whereIn('status',
-                                              $campaign->to_status)->count();
+                                              $campaign->to_status)
+                                          ->count();
 
 
         // Successfully send to provider
@@ -226,49 +227,13 @@ class CampaignsController extends Controller
 
         // Try to send to provider but fails or not even try to sent
         $numberNotSend = $totalRecipients;
+
         if ($campaign->has_sent) {
-            $numberNotSend1 = $campaign->list->recipients()
-                                             ->whereIn('id',
-                                                 function ($subQuery) use (
-                                                     $campaign
-                                                 ) {
-                                                     $subQuery->select(['recipient_id'])
-                                                              ->from('campaign_status')
-                                                              ->where([
-                                                                  [
-                                                                      'campaign_id',
-                                                                      "=",
-                                                                      $campaign->id
-                                                                  ],
-                                                                  [
-                                                                      'status',
-                                                                      "=",
-                                                                      CampaignStatus::Status['none']
-                                                                  ],
-                                                              ]);
-                                                 })->count();
+            // Count recipient job dispatch but failed to sending to provider
+            $numberNotSend1 = $this->getNumberOfRecipientsFailToSendToProvider($campaign);
 
-
-            $numberNotSend3 = CampaignStatus::select([
-                'id',
-                'campaign_id',
-                'recipient_id'
-            ])
-                                            ->whereCampaignId($campaign->id)
-                                            ->get()->groupBy('recipient_id')
-                                            ->count();
-            $numberNotSend2 = $campaign->list->recipients()
-                                             ->whereNotIn('id',
-                                                 function ($subQuery) use (
-                                                     $campaign
-                                                 ) {
-                                                     $subQuery->select('recipient_id')
-                                                              ->from('campaign_status')
-                                                              ->where('campaign_id',
-                                                                  $campaign->id);
-                                                 })
-                                             ->count();
-            //            dd($numberNotSend1, $numberNotSend2, $numberNotSend3);
+            // Count recipients in the email list but not in the campaign_status
+            $numberNotSend2 = $this->getNumberOfRecipeintNotDispatched($campaign);
 
             $numberNotSend = $numberNotSend1 + $numberNotSend2;
         }
@@ -276,38 +241,28 @@ class CampaignsController extends Controller
         // Successfully deliver to recipient mailbox (form webhook)
         $delivered = CampaignStatus::select([
             'campaign_id',
-            'recipient_id',
             'status'
         ])
                                    ->whereCampaignId($campaign->id)
                                    ->whereStatus(CampaignStatus::Status['delivered'])
-                                   ->groupBY([
-                                       'campaign_id',
-                                       'recipient_id',
-                                       'status'
-                                   ])
                                    ->count();
 
         // Try to deliver but bounce from recipient mailbox (form webhook)
         $bounced = CampaignStatus::select([
             'campaign_id',
-            'recipient_id',
             'status'
         ])
                                  ->whereCampaignId($campaign->id)
                                  ->whereStatus(CampaignStatus::Status['bounce'])
-                                 ->distinct()
                                  ->count();
 
         // Provider not deliver (form webhook)
         $dropped = CampaignStatus::select([
             'campaign_id',
-            'recipient_id',
             'status'
         ])
                                  ->whereCampaignId($campaign->id)
                                  ->whereStatus(CampaignStatus::Status['dropped'])
-                                 ->distinct()
                                  ->count();
 
         return array(
@@ -339,5 +294,56 @@ class CampaignsController extends Controller
         return redirect()->back()
                          ->withStatus("Resent to {$recipients->count()} unsent recipients!");
 
+    }
+
+    /**
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
+     * @return mixed
+     */
+    private function getNumberOfRecipeintNotDispatched(Campaign $campaign) {
+        $numberNotSend2 = $campaign->list->recipients()
+                                         ->whereNotIn('id',
+                                             function ($subQuery) use (
+                                                 $campaign
+                                             ) {
+                                                 $subQuery->select('recipient_id')
+                                                          ->from('campaign_status')
+                                                          ->where('campaign_id',
+                                                              $campaign->id);
+                                             })
+                                         ->count();
+
+        return $numberNotSend2;
+    }
+
+    /**
+     * @param \Anacreation\CmsEmail\Models\Campaign $campaign
+     * @return mixed
+     */
+    private function getNumberOfRecipientsFailToSendToProvider(
+        Campaign $campaign
+    ) {
+        $numberNotSend1 = $campaign->list->recipients()
+                                         ->whereIn('id',
+                                             function ($subQuery) use (
+                                                 $campaign
+                                             ) {
+                                                 $subQuery->select(['recipient_id'])
+                                                          ->from('campaign_status')
+                                                          ->where([
+                                                              [
+                                                                  'campaign_id',
+                                                                  "=",
+                                                                  $campaign->id
+                                                              ],
+                                                              [
+                                                                  'status',
+                                                                  "=",
+                                                                  CampaignStatus::Status['none']
+                                                              ],
+                                                          ]);
+                                             })->count();
+
+        return $numberNotSend1;
     }
 }
