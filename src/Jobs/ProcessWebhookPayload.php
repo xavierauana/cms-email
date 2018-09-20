@@ -64,6 +64,10 @@ class ProcessWebhookPayload implements ShouldQueue
 
     private function updateCampaignStatus(array $item) {
 
+        if (!isset($item['campaign_id']) or !isset($item['recipient_id'])) {
+            return;
+        }
+
         $status = $this->findCampaignStatus($item);
 
         $this->updateOrCreateCampaignStatus($item, $status);
@@ -71,6 +75,12 @@ class ProcessWebhookPayload implements ShouldQueue
     }
 
     private function updateEmailActivities($item) {
+
+        if (!isset($item['campaign_id']) or !isset($item['recipient_id'])) {
+            return;
+        }
+
+
         EmailActivity::create([
             "campaign_id"  => $item['campaign_id'],
             "recipient_id" => $item['recipient_id'],
@@ -94,6 +104,7 @@ class ProcessWebhookPayload implements ShouldQueue
      * @return mixed
      */
     private function findCampaignStatus(array $item) {
+
         $status = CampaignStatus::where([
             ["campaign_id", "=", $item['campaign_id']],
             ["recipient_id", "=", $item['recipient_id']],

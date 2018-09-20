@@ -15,6 +15,6 @@ class WebhooksController extends Controller
 
         dispatch(new ProcessWebhookPayload($collection));
 
-        return response("done");
+        return response()->json(['completed' => true]);
     }
 }
