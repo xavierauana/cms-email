@@ -2,6 +2,7 @@
 
 namespace Anacreation\CmsEmail\Jobs;
 
+use Anacreation\CmsEmail\Entities\CampaignDTO;
 use Anacreation\CmsEmail\Models\Campaign;
 use Anacreation\CmsEmail\Models\CampaignStatus;
 use Anacreation\CmsEmail\Models\Recipient;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 
 class SendEmail implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
@@ -40,7 +41,6 @@ class SendEmail implements ShouldQueue
     public function __construct(
         Campaign $campaign, Recipient $recipient, bool $skip = true
     ) {
-        //
         $this->campaign = $campaign;
         $this->recipient = $recipient;
         $this->skip = $skip;
@@ -85,7 +85,7 @@ class SendEmail implements ShouldQueue
 
             $this->updateCampaignStatus($status);
 
-            Log::info("SendEmailJob: Send to provider successfully. campaign id: {$this->campaign->id} , recipient id: $this->recipient->id");
+            Log::info("SendEmailJob: Send to provider successfully. campaign id: {$this->campaign->id} , recipient id: {$this->recipient->id}");
 
         } else {
 

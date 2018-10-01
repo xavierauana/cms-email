@@ -2,6 +2,7 @@
 
 namespace Anacreation\CmsEmail\Jobs;
 
+use Anacreation\CmsEmail\Entities\CampaignDTO;
 use Anacreation\CmsEmail\Models\Campaign;
 use Anacreation\CmsEmail\Models\Recipient;
 use Illuminate\Bus\Queueable;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class AssignToSender implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
@@ -48,11 +49,10 @@ class AssignToSender implements ShouldQueue
 
             Log::info("Dispatch job for {$recipient->email} and campaign id: {$this->campaign->id}");
 
-            $job = new SendEmail($this->campaign, $recipient);
-
             $queue = config("cms_email.send_email_queue", "default");
 
-            dispatch($job)->onQueue($queue);
+            dispatch(new SendEmail($this->campaign,
+                $recipient))->onQueue($queue);
         });
     }
 }

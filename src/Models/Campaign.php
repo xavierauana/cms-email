@@ -5,6 +5,7 @@ namespace Anacreation\CmsEmail\Models;
 use Anacreation\Cms\Contracts\ContentGroupInterface;
 use Anacreation\Cms\Models\Role;
 use Anacreation\Cms\traits\ContentGroup;
+use Anacreation\CmsEmail\Entities\CampaignDTO;
 use Anacreation\CmsEmail\Jobs\PrepareJobs;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -194,7 +195,6 @@ class Campaign extends Model implements ContentGroupInterface
 
         return route('campaign.web', $this);
     }
-
 
     /**
      * @param \Anacreation\CmsEmail\Models\Recipient $recipient

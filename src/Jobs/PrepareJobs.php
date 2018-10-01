@@ -2,6 +2,7 @@
 
 namespace Anacreation\CmsEmail\Jobs;
 
+use Anacreation\CmsEmail\Entities\CampaignDTO;
 use Anacreation\CmsEmail\Models\Campaign;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class PrepareJobs implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
@@ -44,20 +45,12 @@ class PrepareJobs implements ShouldQueue
             ->recipients()
             ->whereIn('status', $this->campaign->to_status);
 
-        $total = $query->count();
-
-        $numberOfJobs = 99;
-
-        // show balance between timeout and memory
-        $itemPerPage = ceil(100005 / $numberOfJobs);
+        $itemPerPage = $this->getItemPerChunk($query);
 
         $query->chunk($itemPerPage,
             function (Collection $recipients) use (&$count) {
 
-                $job = (new AssignToSender($this->campaign,
-                    $recipients))->delay(1);
-
-                dispatch($job);
+                dispatch(new AssignToSender($this->campaign, $recipients));
 
                 Log::info("PrepareJobs: batch {$count}");
 
@@ -65,5 +58,37 @@ class PrepareJobs implements ShouldQueue
 
             });
 
+    }
+
+    /**
+     * @param $total
+     * @return int
+     */
+    private function getNumberOfJobs($total): int {
+
+        switch ($total) {
+            case $total > 5000:
+                return 100;
+            case $total > 1000:
+                return 10;
+            default:
+                return 5;
+        }
+    }
+
+    /**
+     * @param $query
+     * @return float
+     */
+    private function getItemPerChunk($query): float {
+
+        $total = $query->count();
+
+        $numberOfJobs = $this->getNumberOfJobs($total);
+
+        // show balance between timeout and memory
+        $itemPerPage = ceil($total / $numberOfJobs);
+
+        return $itemPerPage;
     }
 }
