@@ -27,6 +27,7 @@ class Campaign extends Model implements ContentGroupInterface
     ];
 
     protected $fillable = [
+        'id',
         'title',
         'template',
         'subject',

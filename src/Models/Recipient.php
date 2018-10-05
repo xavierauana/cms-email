@@ -12,6 +12,7 @@ class Recipient extends Model
     protected $table = 'email_list_recipients';
 
     protected $fillable = [
+        'id',
         'name',
         'email',
         'status',

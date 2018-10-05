@@ -16,6 +16,7 @@ class EmailList extends Model
     protected $table = 'email_lists';
 
     protected $fillable = [
+        'id',
         'title',
         'confirm_opt_in',
         'has_welcome_message',
@@ -52,7 +53,6 @@ class EmailList extends Model
 
                     return $recipient;
                 }
-
 
             }
         }

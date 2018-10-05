@@ -21,11 +21,11 @@ class SendEmail implements ShouldQueue
     /**
      * @var \Anacreation\CmsEmail\Models\Campaign
      */
-    public $campaign;
+    protected $campaign;
     /**
      * @var \Anacreation\CmsEmail\Models\Recipient
      */
-    public $recipient;
+    protected $recipient;
     /**
      * @var bool
      */
